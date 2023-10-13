@@ -1,0 +1,95 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,700;1,300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fira+Sans:wght@200;300;400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+.required {
+  color: #e01020;
+  font-size: 16px;
+  border: none;
+}
+
+#active-link {
+  border-left: solid 4px purple;
+  color: black;
+  background-color:#FCFCFC;
+}
+
+.ant-btn-primary {
+  background-color: #1677ff;
+}
+
+.item-menu:hover{
+  background-color: black;
+  color: white;
+  padding: 6px;
+  border: 2px solid transparent;
+  border-radius: 20px 10px;
+
+  
+}
+
+/* .active {
+  background-color: #21130d;
+  color: #21130d
+} */
+
+.dropdown-menu{
+  position: absolute;
+  z-index: 2;
+  top: 100px;
+  right:200px;
+  background-color: #fff;
+  border-radius: var(--border-radius);
+  padding: 10px 20px;
+  width: 200px;
+}
+
+.dropdown-menu::before{
+  content: '';
+  position: absolute;
+  top: -5px;
+  right: 20px;
+  height: 20px;
+  width: 20px;
+  background: var(--secondary-bg);
+  transform: rotate(45deg);
+}
+
+.dropdown-menu.active{
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition: var(--speed) ease;
+  
+}
+
+.dropdown-menu.inactive{
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-20px);
+  transition: var(--speed) ease;
+}
+
+
+.form-register.active{
+  /* opacity: 1; */
+  display: show;
+  transition: 150 ease;
+  
+}
+
+
+
+
+.form-register.inactive{
+  /* opacity: 0; */
+  display: none;
+  transition: 150  ease;
+  
+}
