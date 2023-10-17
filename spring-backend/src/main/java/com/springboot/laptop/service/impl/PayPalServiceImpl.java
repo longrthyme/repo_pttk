@@ -67,9 +67,6 @@ public class PayPalServiceImpl implements PayPalService {
         var appContext = new PayPalAppContextDTO();
         appContext.setReturnUrl("http://localhost:8080/api/v1/orders/checkout/success");
         appContext.setBrandName("My brand");
-//        appContext.setLandingPage(PaymentLandingPage.BILLING);
-//        appContext.setPaymentMethod("PAYPAL");
-//        appContext.setPaymentMethodReference("IMMEDIATE_PAYMENT_REQUIRED");
         orderDTO.setApplicationContext(appContext);
         var token = getAccessToken();
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create(createUrl(paypalConfig.getBaseUrl(), ORDER_CHECKOUT)))

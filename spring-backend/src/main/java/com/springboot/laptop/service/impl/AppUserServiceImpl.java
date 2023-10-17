@@ -66,14 +66,11 @@ public class AppUserServiceImpl implements AppUserService {
     private static final long MINUS_TO_EXPIRED = 10;
     private final CustomerRepository customerRepository;
     private final AccountRepository accountRepository;
-    private final UserRoleService userRoleServiceImpl;
     private final ResetTokenRepository resetTokenRepository;
     private final MailService mailService;
     private final AuthenticationManager authenticationManager;
     private final UserDetailServiceImpl userDetailService;
     private final JwtUtility jwtUtility;
-
-    private final CloudinaryService cloudinaryService;
 
     private final UserMapper userMapper;
 
@@ -121,9 +118,9 @@ public class AppUserServiceImpl implements AppUserService {
             AppUser loggedUser = null;
             if (userDetails.getAuthorities().iterator().next().getAuthority().equals("ROLE_CUSTOMER")) {
 
-                loggedUser = customerRepository.findByUsernameIgnoreCase(userDetails.getUsername()).orElseThrow(() -> new RuntimeException("This customer not found"));
+                loggedUser = customerRepository.findByUsernameIgnoreCase(userDetails.getUsername()).orElseThrow(() -> new RuntimeException(StatusResponseDTO.USER_NOT_FOUND.name()));
             } else
-                loggedUser = accountRepository.findByUsernameIgnoreCase(userDetails.getUsername()).orElseThrow(() -> new RuntimeException("This account not found"));
+                loggedUser = accountRepository.findByUsernameIgnoreCase(userDetails.getUsername()).orElseThrow(() -> new RuntimeException(StatusResponseDTO.USER_NOT_FOUND.name()));
 
 
             if (!loggedUser.getEnabled()) throw new CustomResponseException(StatusResponseDTO.ACCOUNT_BEEN_INACTIVATED);
@@ -132,7 +129,6 @@ public class AppUserServiceImpl implements AppUserService {
             JwtResponse jwtResponse = new JwtResponse();
             jwtResponse.setJwtToken(tokenDto);
             jwtResponse.setExpiresIn((System.currentTimeMillis() + JwtUtility.EXPIRE_DURATION));
-
 
             if (loggedUser instanceof Customer) {
 
@@ -155,6 +151,11 @@ public class AppUserServiceImpl implements AppUserService {
 
     @Override
     public Object register(AppClientSignUpDTO user) throws Exception {
+
+        if(!StringUtils.hasText(user.getPassword().trim())) throw new CustomResponseException(StatusResponseDTO.PASSWORD_NOT_PROVIDED);
+
+        if(user.getPassword().length() <= 6) throw new CustomResponseException(StatusResponseDTO.PASSWORD_NOT_MEET_REQUIREMENT);
+
         if (customerRepository.existsByUsername(user.getUsername()))
             throw new CustomResponseException(StatusResponseDTO.USERNAME_IN_USE);
 
@@ -164,9 +165,7 @@ public class AppUserServiceImpl implements AppUserService {
         if (!user.getPassword().equals(user.getRePassword()))
             throw new CustomResponseException(StatusResponseDTO.PASSWORD_NOT_MATCH);
 
-//        UserRoleEntity userRole = userRoleServiceImpl.getUserRoleByEnumName(UserRoleEnum.ROLE_USER);
         Customer appClient = new Customer();
-//        appClient.setRoles(List.of(userRole));
         appClient.setUsername(user.getUsername());
         appClient.setEmail(user.getEmail());
         appClient.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -174,8 +173,7 @@ public class AppUserServiceImpl implements AppUserService {
         appClient.setCreatedTimestamp(new Date());
 
         try {
-//            return userMapper.userToUserDTO(customerRepository.save(appClient));
-            return customerRepository.save(appClient);
+            return userMapper.userToUserDTO(customerRepository.save(appClient));
         } catch (Exception ex) {
             throw ex;
         }
@@ -187,11 +185,6 @@ public class AppUserServiceImpl implements AppUserService {
         Optional<Customer> byEmail = customerRepository.findByEmail(email);
         return byUsername.isPresent() || byEmail.isPresent();
     }
-
-//    @Override
-//    public List<UserDTO> getAll() {
-//        return customerRepository.findAll().stream().map(userMapper::userToUserDTO).collect(Collectors.toList());
-//    }
 
     @Override
     public Object deleteCustomer(Long customerId) {

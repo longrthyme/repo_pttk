@@ -20,22 +20,21 @@ import java.util.Set;
 @Builder
 public class ProductEntity extends  BaseEntity  {
 
-    @NotBlank(message = "Product name must be not empty")
-    @Size(min = 3, max = 100)
+    @NotBlank(message = "You must provide the name")
+    @Size(min = 3, max = 100, message = "Product name must be greater than 3 and less than 100 characters")
     private String name;
 
-    @NotNull(message = "You must upload image")
+    @NotNull(message = "You must upload primary image")
     @Column(name="primary_image")
     private String primaryImage;
 
     private boolean enabled;
 
-
-    @NotNull(message = "Product must have price")
+    @NotNull(message = "You must provide the price")
     private Float original_price;
 
 
-    @NotNull(message = "Product must have price")
+    @NotNull(message = "Product must provide the discount percent")
     private Float discount_percent;
 
     @JsonBackReference(value = "brand-products")
@@ -44,16 +43,13 @@ public class ProductEntity extends  BaseEntity  {
     @JoinColumn(name="brand_id")
     private BrandEntity brand;
 
-    @NotBlank(message = "Product does not have description")
-    @Size(min = 3, max = 30)
+    @Size(min = 0, max = 200, message = "Mô tả sản phẩm không quá 200 ký tự  ")
     private String description;
 
     @Column(name = "in_stock")
     private boolean inStock;
 
 
-//    many instances of ProductEntity can be associated with one instance of CategoryEntity, a product belongs to
-//    only one category
     @JsonBackReference(value = "category-products")
     @NotNull(message = "Product must belong to category")
     @ManyToOne(fetch = FetchType.EAGER)

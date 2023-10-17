@@ -6,6 +6,8 @@ public enum StatusResponseDTO {
     CATEGORY_CONFLICT_BRAND("500", "Danh mục này đang được nhãn hàng kinh doanh"),
     CATEGORY_CONFLICT_PRODUCTS("500", "Sản phẩm thuộc danh mục này đang được kinh doanh"),
     PASSWORD_NOT_MATCH("500", "Hai mật khẩu không trùng nhau"),
+
+    PASSWORD_NOT_PROVIDED("500", "Vui lòng nhập mật khẩu"),
     USERNAME_IN_USE("409", "Tên người dùng đã tồn tại !"),
 
     EMAIL_IN_USE("409", "Gmail đã được sử dụng !"),
@@ -26,6 +28,11 @@ public enum StatusResponseDTO {
     ORDER_HAS_NOT_BEEN_DELIVERED("500", "Đơn hàng chưa được giao thành công cho bạn "),
     FIELD_IS_MISSING("500", "Please prodvide the full information !"),
 
+    USER_ALREADY_EXISTS("500", "Userna"),
+    PASSWORD_NOT_MEET_REQUIREMENT("500", "Mật khẩu ít nhất 6 ký tự !"),
+
+
+
     PRODUCT_HAS_BEEN_LOCKED("500", "Sản phẩm đã ngừng kinh doanh"),
     INFORMATION_IS_MISSING("500", "Bạn chưa nhập đủ thông tin !"),
     BRAND_CONSTRAINT_EXCEPTION("500", "Thương hiệu đang kinh doanh sản phẩm  "),
@@ -35,8 +42,9 @@ public enum StatusResponseDTO {
 
     RESET_PASSWORD_FAILED("400", "Đổi mật khẩu không thành công"),
 
+
     CATEGORY_NOT_FOUND("404", "Không tìm thấy danh mục này"),
-    USER_NOT_FOUND("404", "Không tìm thấy khách hàng này"),
+    USER_NOT_FOUND("404", "Không tồn tại tài khoản trên hệ thống"),
     BRAND_NOT_FOUND("404", "Không tìm thấy hãng sản xuất"),
     PRODUCT_NOT_FOUND("404", "Không tìm thấy sản phẩm"),
     ORDER_NOT_FOUND("404", "Không tìm thấy đơn hàng này"),

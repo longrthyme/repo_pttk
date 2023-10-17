@@ -33,11 +33,11 @@ public class AccountController {
     }
 
 
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
-//    @PutMapping("/{customerId}/{status}")
-//    public ResponseEntity<?> updateStatusUser(@PathVariable Long customerId, @PathVariable String status) {
-//        return ResponseEntity.ok().body(userService.updateStatus(customerId, status));
-//    }
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PutMapping("/{customerId}/{status}")
+    public ResponseEntity<?> updateStatus(@PathVariable Long customerId, @PathVariable String status) {
+        return ResponseEntity.ok().body(accountService.updateStatus(customerId, status));
+    }
 
 //    @PreAuthorize("hasRole('ROLE_ADMIN')")
 //    @DeleteMapping("/remove/{customerId}")

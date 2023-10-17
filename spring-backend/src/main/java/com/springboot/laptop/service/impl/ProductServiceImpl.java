@@ -75,7 +75,6 @@ public class ProductServiceImpl implements ProductService {
             convertEntity.getDetails().add(newDetail);
         }
 
-//        convertEntity.setPrimaryImage(cloudinaryService.uploadFile(mainImageMultipart));
 
         convertEntity.setImages(new HashSet<>());
 

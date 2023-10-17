@@ -2,9 +2,9 @@ package com.springboot.laptop.model.enums;
 
 public enum PaymentStatus {
 
-    Paid,
+    PAID,
 
-    Unpaid,
+    UNPAID,
 
-    Partially_paid
+    PARTIALLY_PAID
 }

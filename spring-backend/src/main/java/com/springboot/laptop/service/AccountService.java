@@ -11,4 +11,6 @@ public interface AccountService {
     List<AccountResponseDTO> getAllAccount();
 
     Object createUserForPrivilege(UserCreationDTO userCreation, MultipartFile imgUser);
+
+    Object updateStatus(Long customerId, String status);
 }

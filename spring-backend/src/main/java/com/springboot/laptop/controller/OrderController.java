@@ -1,10 +1,7 @@
 package com.springboot.laptop.controller;
 
 import com.springboot.laptop.model.dto.OrderDTO;
-import com.springboot.laptop.model.dto.request.ChangeStatusDTO;
-import com.springboot.laptop.model.dto.request.OrderRequestDTO;
-import com.springboot.laptop.model.dto.request.PayPalCaptureDTO;
-import com.springboot.laptop.model.dto.request.PaymentRequestDTo;
+import com.springboot.laptop.model.dto.request.*;
 import com.springboot.laptop.model.dto.response.*;
 import com.springboot.laptop.service.OrderService;
 import com.springboot.laptop.service.PayPalService;
@@ -21,7 +18,9 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 @RestController
@@ -33,25 +32,42 @@ public class OrderController {
     private final OrderService orderService;
     private final PayPalService payPalService;
 
+
+    @PreAuthorize("hasRole('ROLE_CUSTOMER')")
     @PostMapping("/create_order")
     public ResponseEntity<?> createOrder(@RequestBody OrderDTO orderDTO) throws IOException, InterruptedException {
         return ResponseEntity.ok().body(payPalService.createOrder(orderDTO));
     }
 
-    @PostMapping(value = "/success")
+    @PreAuthorize("hasRole('ROLE_CUSTOMER')")
+    @PostMapping(value = "/confirm_payment_paypal")
     public ResponseEntity<?> success(@RequestBody PayPalCaptureDTO successDTO) throws IOException, InterruptedException {
         return ResponseEntity.ok().body(payPalService.confirmOrder(successDTO.getOrderID(), successDTO.getAddressID(), successDTO.getPaymentMethod()));
     }
 
     @Operation(summary = "API thanh toán")
-    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
-    @PostMapping("/checkout")
+    @PreAuthorize("hasAnyRole('ROLE_CUSTOMER')")
+    @PostMapping("/checkout/vnPay")
+    public ResponseEntity<?> checkoutVnPay(HttpServletRequest req) throws UnsupportedEncodingException {
+        return ResponseEntity.ok().body(orderService.checkoutVnpay(req));
+    }
+
+    @Operation(summary = "API thanh toán")
+    @PreAuthorize("hasAnyRole('ROLE_CUSTOMER')")
+    @PostMapping("/checkout/paypal")
+    public ResponseEntity<?> checkoutPaypal(@RequestBody PaypalCheckoutDTO checkout) throws IOException, InterruptedException {
+        return ResponseEntity.ok().body(orderService.checkoutPaypal(checkout));
+    }
+
+    @Operation(summary = "API thanh toán")
+    @PreAuthorize("hasAnyRole('ROLE_CUSTOMER')")
+    @PostMapping("/checkout/COD")
     public ResponseEntity<?> checkout(@RequestBody OrderRequestDTO orderRequest) throws IOException, InterruptedException {
-        return ResponseEntity.ok().body(orderService.checkout(orderRequest));
+        return ResponseEntity.ok().body(orderService.checkoutCOD(orderRequest));
     }
 
     @Operation(summary = "API hủy đơn hàng")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_CUSTOMER')")
     @PutMapping("/cancel_order/{orderId}")
     public Object cancelOrders(@PathVariable String orderId) {
        return ResponseEntity.ok().body(orderService.cancelOrders(orderId));

@@ -22,6 +22,8 @@ import java.util.List;
 @Builder
 public class AccountResponseDTO {
 
+    private Long id;
+
     private String username;
 
     

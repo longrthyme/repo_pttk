@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.springboot.laptop.model.enums.OrderStatus;
 import com.springboot.laptop.model.enums.PaymentMethod;
+import com.springboot.laptop.model.enums.PaymentStatus;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -60,5 +61,10 @@ public class Order{
     @ManyToOne
     @JoinColumn(name= "account_id", referencedColumnName = "id")
     private Account account;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_status")
+    PaymentStatus payment_status;
+
 
 }

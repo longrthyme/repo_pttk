@@ -40,8 +40,8 @@ public class AuthController {
                     @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content)
             })
     @PostMapping("/auth/register")
-    public ResponseEntity<?> signup(@RequestBody AppClientSignUpDTO user) throws Exception {
-        return ResponseEntity.ok().body(userService.register(user));
+    public ResponseEntity<?> signup(@Valid @RequestBody AppClientSignUpDTO user) throws Exception {
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.register(user));
     }
 
 

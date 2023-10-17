@@ -8,6 +8,8 @@ import lombok.Setter;
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -24,11 +26,12 @@ public class AppUser {
     @NotBlank(message = "Username must be not empty")
     protected String username;
 
-    @NotBlank(message = "Product name must be not empty")
+    @NotEmpty(message = "Password must be not empty")
+    @Size(min = 6, message = "Password must be at least 5 characters")
     protected String password;
 
     @NotBlank(message = "Email must be not empty")
-    @Email
+    @Email(message = "Vui lòng cung cấp mail đúng định dạng ")
     protected String email;
 
 //    @NotBlank(message = "Name must be not empty")
