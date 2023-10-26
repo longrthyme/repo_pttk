@@ -11,9 +11,10 @@ import DeliveryAddressForm from "@/components/Checkout/DeliveryAddressForm";
 import OrderSummary from "@/components/Checkout/OrderSummary";
 import Payment from "@/components/payment/Payment";
 import OrderContext from "@/context/OrderContext";
-import { NEXT_API } from "@/config";
+import { API_URL, NEXT_API } from "@/config";
 import { toast } from "react-toastify";
 import CartContext from "@/context/CartContext";
+import { useSession } from "next-auth/react";
 
 const steps = ["Login", "Delivery address", "Order summary", "Payment"];
 
@@ -22,6 +23,12 @@ function Checkout(props) {
   const [skipped, setSkipped] = React.useState(new Set());
 
   const router = useRouter();
+
+    
+  const { data: session } = useSession();
+  const token = session?.accessToken;
+
+
 
   const { deliveryAddress, paymentMethod, statusPayment, setStatusPayment } =
     React.useContext(OrderContext);
@@ -103,7 +110,7 @@ function Checkout(props) {
 
     if (paymentMethod === "CASH") {
          // ver
-      const resPos = await fetch(`${API_URL}/orders/checkout`, {
+      const resPos = await fetch(`${API_URL}/orders/checkout/COD`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -117,7 +124,6 @@ function Checkout(props) {
 
       const postData = await resPos.json();
 
-      console.log("Value post is " + JSON.stringify(postData));
 
       if (!resPos.ok) {
         toast.error("Lỗi, vui lòng thử lại " + postData.message);

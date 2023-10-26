@@ -79,12 +79,11 @@ function CartItem({ data }) {
       <td className="wsus__pro_img">
         <img
           alt="product"
-          className="img-fluid w-80"
+          // className="img-fluid w-80"
           src={data.product.primaryImage}
+          width={150}
+          height={150}
         />
-
-        {/* <Image  src={data.product.primaryImage} alt="product"
-            className="img-fluid w-100" /> */}
       </td>
 
       <td className="wsus__pro_name">

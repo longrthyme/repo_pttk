@@ -1,5 +1,7 @@
 import { API_URL, NEXT_API } from "@/config";
+import { useSession } from "next-auth/react";
 import { createContext, useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 const OrderContext = createContext();
 
@@ -14,10 +16,44 @@ export function OrderProvider({ children }) {
 
   const [statusPayment, setStatusPayment] = useState(false);
 
+
+  const [userOrders, setUserOrders] = useState([]);
+
+  const { data: session } = useSession();
+  const token = session?.accessToken;
+
+
+
+
+  // get all user order
+  const getAllUserOrders = async () => {
+    setState({ ...state, isLoading: true });
+    const response = await fetch(`${API_URL}/user/get-orders`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return data.message;
+    } else {
+      console.log("User order " + JSON.stringify(data));
+      setUserOrders(data);
+    }
+    setState((prevState) => ({ ...prevState, isLoading: false }));
+  };
+
+
   const deliverAddress = async () => {
     setState({ ...state, isLoading: true });
     const response = await fetch(`${NEXT_API}/api/user`, {
       method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
 
     const data = await response.json();
@@ -32,7 +68,7 @@ export function OrderProvider({ children }) {
 
   const updateOrderManagement = async () => {
     // ver
-    const response = await fetch(`${API_URL}/admin/order/get_all_order`, {
+    const response = await fetch(`${API_URL}/admin/order/get-all-order`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -40,7 +76,7 @@ export function OrderProvider({ children }) {
 
     const restData = await response.json();
    
-    if (!resGet.ok) {
+    if (!response.ok) {
       toast.error(restData.message);
     } else {
       setOrderManagement(restData);   // cập nhật giá trị state vì địa chỉ của ô nhớ biến thay đổi
@@ -57,7 +93,9 @@ export function OrderProvider({ children }) {
     setOrderManagement,
     updateOrderManagement,
     statusPayment,
-    setStatusPayment
+    setStatusPayment,
+    getAllUserOrders,
+    userOrders
     
   };
 

@@ -1,0 +1,36 @@
+const errorCodes = {
+    EMAIL_IS_REQUIRED: "Email is required !",
+    USERNAME_IS_REQUIRED: "Username is required !",
+    USERNAME_IS_NOT_MEET: "Username must be at least 5 character",
+    EMAIL_IS_REQUIRED: "Email is required !",
+    PASSWORD_IS_REQUIRED: "Password is required !",
+    PASSWORD_AT_LEAST: "Password must be at least 6 characters !",
+    EMAIL_IS_NOT_VALID: "Email doesn't meet format requirement !",
+    REPASSWORD_IS_REQUIRED: "Repassword is required !",
+    REPASSWORD_IS_NOT_MEET:  "Repassword must be at least 6 characters",
+    NAME_USER_IS_REQUIRED: "Full name is required !",
+    PHONE_NUMBER_IS_REQUIRED: "Phone number is required !",
+    PHONE_NUMBER_NOT_CORRECT_FORMAT: "Phone number is not in correct format!",
+    AUTHENTICATION_FAILURE: "Wrong username or password, check again !",
+    PRODUCT_NAME_REQUIRED: "Please provide the product name !",
+    PRODUCT_DISCOUNT_REQUIRED: "Please provide the discount percent !",
+    PRODUCT_DISCOUNT_MIN : "Discount percent min is 0.0",
+    BRAND_GET_FAILURE: "Error while getting brand",
+    CATEGORY_BY_BRAND: "Error while getting categories by brand",
+    PRODUCT_PRICE_REQUIRED: "Please provide the product price",
+    PRODUCT_PRICE_MIN : "Min price product is 0.0",
+    PRODUCT_QUANTITY_REQUIRED: "Product quantity required !",
+    PRODUCT_QUANTITY_MIN: "Product quantity min is 0",
+    PRODUCT_IMAGE_REQUIRED: "Product image required !",
+    PRODUCT_EXTRA_IMAGE_REQUIRED : "Extra image required !",
+    IMAGE_REQUIRED: "Image is required !",
+    CATEGORY_NAME_REQUIRED: "Category name is required !",
+    IMAGE_REQUIRED: "Image is required !",
+    FULL_NAME_REQUIRED: "Full name is required",
+    DETAIL_NAME_REQUIRED: "Detail name is required ",
+    DETAIL_VALUE_REQUIRED: "Detail value is required ",
+    
+    
+  };
+  
+  export default errorCodes;

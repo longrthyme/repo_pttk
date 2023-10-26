@@ -4,7 +4,9 @@
 //   "https://laptop-store-longtran.vercel.app"
 
 
+// export const API_URL = "https://ecommerceelectronic.azurewebsites.net/api/v1"
+
 export const API_URL = "http://localhost:8080/api/v1"
 
 export const NEXT_API =
-  "http://localhost:3000"
+  "http://localhost:3000/"

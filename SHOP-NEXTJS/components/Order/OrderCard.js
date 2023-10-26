@@ -14,12 +14,10 @@ function OrderCard(props) {
       <Grid container spacing={2} className="flex items-center">
         <Grid item xs={6}>
           <div className="flex items-center">
-            <div className="h-[5rem] w-[5rem]">
-              <Image
+          <img
                 className="object-cover cursor-pointer"
-                src={data.product.primaryImage} width={100} height={100}
+                src={data.product.primaryImage} width={50} height={50}
               />
-            </div>
             <h2 className="text-sm font-semibold ml-8">{data.product.name}</h2>
           </div>
         </Grid>

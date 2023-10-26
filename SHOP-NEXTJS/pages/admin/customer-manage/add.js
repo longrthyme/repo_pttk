@@ -1,53 +1,44 @@
 import AdminLayout from "@/layouts/AdminLayout";
-import React, {useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { Card, Col, Input, InputNumber, Row, Spin, Switch } from "antd";
 import Image from "next/image";
 import { UserOutlined } from "@ant-design/icons";
 import icon_upload from "../../../public/images/logo_upload.png";
 import { useSession } from "next-auth/react";
-
+import SpinTip from "@/components/loading/SpinTip";
 
 export default function AddEmployee() {
+  const router = useRouter();
 
-    const router = useRouter();
+  const addEmployee = () => {};
 
-    const addEmployee = () => {
-
-
-    }
-
-
-    
-  const { data: session } = useSession();
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.push("/account/login");
+    },
+  });
   const token = session?.accessToken;
 
+  const [data, setData] = useState({
+    image: null,
+    fullname: "",
+    username: "",
+    password: "",
+    email: "",
+    phoneNumber: "",
+  });
 
-  useEffect(() => {
+  const [imagePrev, setImagePrev] = useState(null);
 
-    if(session?.role == "CUSTOMER") {
-      router.push("/unauthorized")
-    }
-  } , [session]);
+  const [isLoading, setIsLoading] = useState(false);
 
-
-
-
-    const [data, setData] = useState({
-        image: null,
-        fullname: "",
-        username:"",
-        password:"",
-        email:"",
-        phoneNumber:""
-      });
-
-    const [imagePrev, setImagePrev] = useState(null);
-
-    const [isLoading, setIsLoading] = useState(false);
-
+  if (status === "loading") {
+    return <SpinTip />;
+  } else
     return (
-        <div className="p-10 border-2 border-solid">
+      <div className="p-10 border-2 border-solid">
         {isLoading ? (
           <Spin />
         ) : (
@@ -61,16 +52,18 @@ export default function AddEmployee() {
               </Col>
               <Col flex="1">
                 <div className="flex flex-col">
-                  <label className="font-semibold text-base">
-                    Họ và tên:
-                  </label>
-                  <Input placeholder="Your full name" size="large"  
+                  <label className="font-semibold text-base">Họ và tên:</label>
+                  <Input
+                    placeholder="Your full name"
+                    size="large"
                     onChange={(e) =>
                       setData({ ...data, fullname: e.target.value })
-                    }  prefix={<UserOutlined />} required={true} />
-    <br />
+                    }
+                    prefix={<UserOutlined />}
+                    required={true}
+                  />
+                  <br />
                 </div>
-  
 
                 <div className="flex items-center mt-8">
                   <Image
@@ -91,13 +84,13 @@ export default function AddEmployee() {
                       encType="multipart/form-data"
                       autoComplete="off"
                       required={true}
-                    //   onChange={(e) => setPrimaryImage(e)}
+                      //   onChange={(e) => setPrimaryImage(e)}
                     />
                   </label>
                 </div>
               </Col>
             </Row>
-  
+
             {imagePrev && (
               <Row className="mt-4">
                 <div className="">
@@ -107,10 +100,9 @@ export default function AddEmployee() {
                 </div>
               </Row>
             )}
-  
+
             <hr className="border-1 border-gray-200 mt-20" />
-    
-  
+
             <div className="flex justify-center">
               <button
                 className="bg-black text-white hover:bg-primary-700 font-semibold rounded-md px-4 py-2 mt-6 border border-1 border-solid rounded-md self-center mr-10"
@@ -128,7 +120,7 @@ export default function AddEmployee() {
           </>
         )}
       </div>
-    )
+    );
 }
 
-AddEmployee.getLayout = (page) => <AdminLayout children={page} />
+AddEmployee.getLayout = (page) => <AdminLayout children={page} />;

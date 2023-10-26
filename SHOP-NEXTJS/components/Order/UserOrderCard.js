@@ -9,6 +9,7 @@ import {
   DialogContentText,
   DialogTitle,
   Grid,
+  Rating,
 } from "@mui/material";
 import AdjustIcon from "@mui/icons-material/Adjust";
 import Image from "next/image";
@@ -18,24 +19,40 @@ import OrderAddressCard from "../AddressCard/OrderAddressCard";
 import OrderTracker from "./OrderTracker";
 import { deepPurple } from "@mui/material/colors";
 import StarOutlineIcon from "@mui/icons-material/StarOutline";
-import { NEXT_API } from "@/config";
+import { API_URL, NEXT_API } from "@/config";
 import { toast } from "react-toastify";
 import { Modal } from "antd";
+import { Textarea } from "@mui/joy";
+import { useSession } from "next-auth/react";
+import { CloseCircleOutlined } from "@ant-design/icons";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
 function UserOrderCard(props) {
   const { children, data } = props;
 
   const router = useRouter();
   const [selectedOrder, setSelectedOrder] = useState(null);
 
-  
   const { confirm } = Modal;
 
+  const { data: session } = useSession();
+  const token = session?.accessToken;
 
-  console.log("Data order detail is ", JSON.stringify(data));
+  const MySwal = withReactContent(Swal);
 
   const [open, setOpen] = useState(false);
   const [fullWidth, setFullWidth] = useState(true);
   const [maxWidth, setMaxWidth] = useState("lg");
+
+  const [selectedDetail, setSelectedDetail] = useState({
+    orderId: null,
+    productId: null,
+    selectedIndex: null,
+  });
+
+  const [reviewContent, setReviewContent] = useState("");
+
+  const [rating, setRating] = useState(1);
 
   const steps = {
     NEW: "1",
@@ -45,73 +62,93 @@ function UserOrderCard(props) {
     DELIVERED: "5",
   };
 
-  const cancelOrder = async () => {
-    const resPut = await fetch(
-      `${NEXT_API}/api/user/order?action=cancel_order`,
-      {
+  const onChange = (e) => {
+    setReviewContent(e.target.value);
+  };
+
+  const cancelOrder = (orderId) => {
+    MySwal.fire({
+      title: "Are you sure?",
+      text: "You want to cancel this order ?" + orderId,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, cancel it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        cancelOrder()
+          .then((result) => {
+            if (result.ok) {
+                MySwal.fire("Success!", "Order has been canceled ", "success");
+            } else {
+                MySwal.fire("Failure!", result.message, "error");
+            } 
+          })
+          .catch((err) => {
+            console.log("error is " + err);
+          });
+      }
+    });
+
+    // handle cancel order fetch
+    const cancelOrder = async () => {
+      const res = await fetch(`${API_URL}/orders/cancel-order/${orderId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ orderId: data.id }),
-      }
-    );
+      }).then((response) => {
+        return response.json();
+      });
 
-    const putData = await resPut.json();
+      return res;
+    };
+  };
 
-    if (!resPut.ok) {
-      toast.error(putData.message);
+  // post review
+
+  const submitReview = async () => {
+    if (reviewContent == "") {
+      toast.error("Write your review first");
+      return;
+    }
+
+    const postReview = {
+      comment: reviewContent,
+      rating: rating,
+      productId: selectedDetail.productId,
+      orderCode: selectedDetail.orderId,
+    };
+    // ver
+    const resGet = await fetch(`${API_URL}/reviews`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(postReview),
+    });
+
+    const dataGet = await resGet.json();
+    if (!resGet.ok) {
+      toast.error(dataGet.message);
     } else {
-      toast.success("Cancel successfully !");
+      toast.success("Review successful !");
+      router.push("/product/detail/${selectedDetail.productId}");
     }
   };
 
-  
-  const showDeleteConfirm = (productId) => {
-    confirm({
-      title: 'Are you sure delete this cart item?',
-      icon: <ExclamationCircleFilled />,
-      content: 'Delete this cart item',
-      okText: 'Yes',
-      okType: 'danger',
-      cancelText: 'No',
-      onOk() {
-        // const deleteCartItem = async () => {
-        //   const resDel = await fetch(
-        //     `${NEXT_API}/api/cart/${productId}`,
-        //     {
-        //       method: "DELETE",
-        //     }
-        //   );
-
-        //   const delData = await resDel.json();
-
-        //   if (!resDel.ok) {
-        //     toast.error(delData.message);
-        //   } else {
-        //     getCart();
-        //     toast.success("Xoá thành công");
-        //   }
-        // };
-
-        // deleteCartItem();
-      },
-      onCancel() {
-        console.log('Cancel');
-      },
-    });
-  };
-
-
   return (
-    <div className="shadow-sm p-2 hover:shadow-sm hover:cursor-pointer shadow-black mt-8">
+    <div className="shadow-sm p-2 hover:shadow-sm shadow-black mt-8">
       <Grid container spacing={2} className="flex items-center">
         <Grid item xs={6}>
           <div className="flex items-center">
             {data.orderDetails.map((product) => (
-              <div className="h-[5rem] w-[5rem]">
+              <div className="h-[2rem] w-[2rem]">
                 <Image
-                  className=" cursor-pointer rounded-full"
+                  // className=" cursor-pointer rounded-full"
                   src={product.product.primaryImage}
                   width={150}
                   height={150}
@@ -140,23 +177,25 @@ function UserOrderCard(props) {
           )}
         </Grid>
 
-        <Grid item xs={2}>
+        <Grid item xs={2} className="flex items-center justify-center">
           <BsEye
             onClick={() => {
               setOpen(true);
               setSelectedOrder(data);
             }}
-            className="hover:cursor-pointer hover:text-primary-900 font-bold ml-6"
+            title="view detail"
+            className="hover:cursor-pointer hover:text-blue-600 font-bold ml-6"
+          />
+
+          <CloseCircleOutlined
+            className="hover:cursor-pointer hover:text-red-600 font-bold ml-6"
+            onClick={() => cancelOrder(data.id)}
+            title="Cancel order"
           />
         </Grid>
       </Grid>
       {open && selectedOrder && (
-        <Dialog
-          fullWidth={fullWidth}
-          maxWidth={maxWidth}
-          open={open}
-          // onClose={() => setOpen(false)}
-        >
+        <Dialog fullWidth={fullWidth} maxWidth={maxWidth} open={open}>
           <DialogTitle>
             Order
             <span className="text-primary-600 ml-4">#{selectedOrder.id}</span>
@@ -191,18 +230,10 @@ function UserOrderCard(props) {
                           activeStep={[steps[selectedOrder.orderStatus]]}
                         />
                       </Grid>
-                      <Grid item xs={2}>
-                        <button
-                          className="bg-primary-400 text-white px-3 py-2 rounded-sm hover:bg-primary-600 ml-4"
-                          onClick={cancelOrder}
-                        >
-                          Cancel order
-                        </button>
-                      </Grid>
                     </Grid>
                   </div>
                   <Grid container>
-                    {selectedOrder.orderDetails.map((detail) => (
+                    {selectedOrder.orderDetails.map((detail, index) => (
                       <Grid
                         item
                         container
@@ -212,7 +243,7 @@ function UserOrderCard(props) {
                         justifyContent="space-between"
                       >
                         <Grid item xs={6} className="flex">
-                          <div className="h-[5rem] w-[5rem] hover:cursor-pointer">
+                          <div className="h-[2rem] w-[2rem] hover:cursor-pointer">
                             <img src={detail.product.primaryImage} alt="" />
                           </div>
 
@@ -227,20 +258,68 @@ function UserOrderCard(props) {
                             >
                               {detail.product.name.toUpperCase()}
                             </p>
-                           
                           </div>
                         </Grid>
                         <Grid item>
-                          <Box sx={{ color: deepPurple[500] }} className="hover:cursor-pointer" onClick={() => router.push(
-                                  `/product/detail/${detail.product.id}`
-                                )}>
+                          <Box
+                            sx={{ color: deepPurple[500] }}
+                            className="hover:cursor-pointer"
+                            onClick={() =>
+                              setSelectedDetail({
+                                orderId: selectedOrder.id,
+                                productId: detail.product.id,
+                                selectedIndex: index,
+                              })
+                            }
+                          >
                             <StarOutlineIcon
                               sx={{ fontSize: "2rem" }}
                               className="px-2 text-xl h-[2rem] w-[2rem]"
                             />
-                            <span>Rate & Review Product</span>
+                            <span className="hover:text-blue-600">
+                              Rate & Review Product
+                            </span>
                           </Box>
                         </Grid>
+
+                        {/* start review part */}
+                        {selectedDetail.selectedIndex != null &&
+                        selectedDetail.selectedIndex == index ? (
+                          <Grid item xs={7} className="mt-10">
+                            <div className="w-1/2">
+                              <h2 className="font-bold mb-2">
+                                Write your review{" "}
+                              </h2>
+                              <Rating
+                                name="simple-controlled"
+                                value={rating}
+                                onChange={(event, newValue) => {
+                                  setRating(newValue);
+                                }}
+                              />
+                              <Textarea
+                                maxLength={100}
+                                style={{
+                                  height: 120,
+                                  resize: "none",
+                                }}
+                                onChange={onChange}
+                                placeholder="write some your feelings about this product"
+                              />
+                              <button
+                                className="px-4 py-1.5 bg-primary-600 text-white hover:bg-primary-800 text-semibold rounded-md mt-4"
+                                onClick={submitReview}
+                              >
+                                {" "}
+                                Review{" "}
+                              </button>
+                            </div>
+                          </Grid>
+                        ) : (
+                          ""
+                        )}
+
+                        {/* end review part */}
                       </Grid>
                     ))}
                   </Grid>

@@ -1,9 +1,8 @@
 import SpinTip from "@/components/loading/SpinTip";
-import { NEXT_API } from "@/config";
+import { API_URL } from "@/config";
 import DataContext from "@/context/DataContext";
 import AdminLayout from "@/layouts/AdminLayout";
-import { ExclamationCircleFilled, UserOutlined } from "@ant-design/icons";
-import { Chip, Grid } from "@mui/material";
+
 
 import {
   Breadcrumb,
@@ -18,51 +17,40 @@ import {
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import React, { Fragment, useContext, useEffect, useState } from "react";
-import { AiOutlineMail } from "react-icons/ai";
 import { BiSolidEdit } from "react-icons/bi";
-import { BsTelephone } from "react-icons/bs";
-import { MdWifiPassword } from "react-icons/md";
 import { toast } from "react-toastify";
-
+import withReactContent from "sweetalert2-react-content";
+import Swal from "sweetalert2";
 
 export default function Employee(req, res) {
-
   const [isLoading, setIsLoading] = useState(false);
 
   const { Search } = Input;
 
   const [searchValue, setSearchValue] = useState("");
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const MySwal = withReactContent(Swal);
 
   const { employees, getAllCustomer } = useContext(DataContext);
 
   const [filterEmployees, setFilterEmployees] = useState(employees);
 
-  
-  const { data: session } = useSession();
-  const token = session?.accessToken;
-
   const router = useRouter();
 
-  
-  useEffect(() => {
+  const { data: session , status} = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.push("/account/login")
+    },
+  });
+  const token = session?.accessToken;
 
-    if(session?.role == "CUSTOMER") {
-      router.push("/unauthorized")
+
+  useEffect(() => {
+    if(token) {
+      getAllCustomer();
     }
-  } , [session]);
-
-
-  
-
-  useEffect(() => {
-
-    getAllCustomer();
-
-
-  }, []);
-
+  }, [token]);
 
   useEffect(() => {
     if (searchValue) {
@@ -78,8 +66,6 @@ export default function Employee(req, res) {
     } else setFilterEmployees(employees);
   }, [searchValue, employees]);
 
-
-  
   const columns = [
     {
       title: "ID",
@@ -143,21 +129,16 @@ export default function Employee(req, res) {
           defaultChecked
           checked={record.enabled}
           onClick={() => {
-            // showConfirm;
-            // setUpdateUser(record)
-
-            (async () => {
+            const update = async () => {
               const resGet = await fetch(
-                `${NEXT_API}/api/user?action=update_status`,
+                `${API_URL}/admin/customers/${record.id}/${
+                  record.enabled ? "disabled" : "enabled"
+                }`,
                 {
                   method: "PUT",
                   headers: {
-                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
                   },
-                  body: JSON.stringify({
-                    customerId: record.id,
-                    status: record.enabled ? "disabled" : "enabled",
-                  }),
                 }
               );
 
@@ -166,34 +147,51 @@ export default function Employee(req, res) {
               if (!resGet.ok) {
                 toast.error(dataGet.message);
               } else {
-                if (record.enabled) toast.error("Deactive account !");
-                else toast.success("Active account!");
-                setUpdate(!update);
+                getAllCustomer();
               }
-            })();
+            };
+
+            MySwal.fire({
+              title: "Are you sure?",
+              text: "You want to update ",
+              icon: "warning",
+              showCancelButton: true,
+              confirmButtonColor: "#3085d6",
+              cancelButtonColor: "#d33",
+              confirmButtonText: "Yes, update it!",
+            }).then((result) => {
+              if (result.isConfirmed) {
+                update();
+                MySwal.fire(
+                  "Updated!",
+                  "Customer has been update status ",
+                  "success"
+                );
+              }
+            });
           }}
         />
       ),
     },
-
 
     {
       title: "Action",
       responsive: ["sm"],
       render: (_, record) => (
         <div className="flex items-center">
-          <BiSolidEdit
-
-            className="hover:cursor-pointer text-xl hover:text-primary-700"
-          />
+          <BiSolidEdit className="hover:cursor-pointer text-xl hover:text-primary-700" />
         </div>
       ),
     },
   ];
 
+  
+  if(status === "loading") {
+    return <SpinTip />
+  } else 
+
 
   return (
-
     <Fragment>
       {isLoading ? (
         <SpinTip />
@@ -238,19 +236,13 @@ export default function Employee(req, res) {
           ) : (
             <SpinTip />
           )}
-
         </div>
       )}
 
-      <div>
-      </div>
+      <div></div>
       {isLoading ? <SpinTip /> : ""}
     </Fragment>
-
-
-  )
-
-
+  );
 }
 
-Employee.getLayout = (page) => <AdminLayout>{page}</AdminLayout>
+Employee.getLayout = (page) => <AdminLayout>{page}</AdminLayout>;

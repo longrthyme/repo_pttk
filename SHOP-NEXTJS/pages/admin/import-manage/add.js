@@ -7,6 +7,8 @@ import DataContext from "@/context/DataContext";
 
 import { toast } from "react-toastify";
 import { useSession } from "next-auth/react";
+import { API_URL } from "@/config";
+import SpinTip from "@/components/loading/SpinTip";
 export default function Import() {
   const router = useRouter();
   const [imports, setImports] = useState([]);
@@ -23,17 +25,14 @@ export default function Import() {
   };
   
   
-  const { data: session } = useSession();
+
+  const { data: session , status} = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.push("/account/login")
+    },
+  });
   const token = session?.accessToken;
-
-
-  useEffect(() => {
-
-    if(session?.role == "CUSTOMER") {
-      router.push("/unauthorized")
-    }
-  } , [session]);
-
 
 
 
@@ -60,14 +59,20 @@ export default function Import() {
 
   console.log("List update product is " + JSON.stringify(imports));
 
-  const removeDetailItem = (index) => setImports(imports.splice(index,1)) 
+
+  // remove an import detail
+  const removeDetailItem = (index) => {
+    let updateImport = [...imports];
+    updateImport.splice(index,1);
+    setImports(updateImport);
+  } 
 
   const addNewDetail= () => {
     
     setImports([...imports, {
-        product: "",
-        quantity: 0,
-        price: 0
+      import_product: "",
+      import_quantity: 0,
+      import_price: 0
     }]);
   }
 
@@ -75,7 +80,7 @@ export default function Import() {
 
     console.log("Value change " + e);
     const updatedItem = [...imports];
-    updatedItem[index]["quantity"] = e;
+    updatedItem[index]["import_quantity"] = e;
     setImports(updatedItem);
 
   }
@@ -84,7 +89,7 @@ export default function Import() {
 
     console.log("Value price " + e);
     const updateItem =  [...imports];
-    updateItem[index]["price"] = e;
+    updateItem[index]["import_price"] = e;
     setImports(updateItem);
 
 
@@ -124,28 +129,35 @@ export default function Import() {
         router.push("/admin/import-manage")
       }
   }
+  
+  if(status === "loading") {
+    return <SpinTip />
+  } else 
+
 
   return (
     <div className="p-10">
+      <button onClick={() => router.push("/admin/import-manage")}> 
+      <i class="bi bi-arrow-left"></i>
+        Go back</button>
       <Col>
+      <h2 className="text-center mb-10">Add import details</h2>
         <button
           className="bg-black text-white px-4 py-1 rounded-md mb-4 hover:bg-blue-500"
           onClick={addNewDetail}
         >
           {" "}
-          Add{" "}
+          Add one{" "}
         </button>
         {imports.map((element, index) => (
           <div className="mb-4 flex items-center" key={index}>
-
+          Import product name
          <Select
-         className="w-40"
+         className="w-40 ml-4"
             showSearch
             placeholder="Select product"
             optionFilterProp="children"
-            // onSearch={onSearch}
-            // filterOption={filterOption}
-            value={element.product}
+            value={element.import_product}
             onChange= {(e) => onChangeProduct(e, index)}
             options={
                 items
@@ -154,12 +166,12 @@ export default function Import() {
 
 
             <div className="ml-8">
-              <label>Quantity</label>
+              <label className="mr-4">Quantity</label>
               <InputNumber min={1} max={100} defaultValue={1}  onChange={(e) => onChangQuantity(e, index)}  />
             </div>
 
             <div className="ml-8">
-              <label>Price</label>
+              <label className="mr-4">Price</label>
               <InputNumber
                 style={{
                   width: 200,
@@ -193,12 +205,14 @@ export default function Import() {
         >
           Cancel
         </button>
-        <button
+        {
+          imports.length > 0 ? <button
           className="bg-black text-white hover:bg-red-400 font-semibold rounded-md px-4 py-2 mt-6 border border-1 border-solid rounded-md self-center ml-10"
             onClick={() => createImport()}
         >
           Submit
-        </button>
+        </button> : ""
+        }
       </div>
     </div>
   );

@@ -4,24 +4,45 @@ import { useContext, useEffect, useState } from "react";
 import { signIn, useSession } from "next-auth/react";
 import CustomerLayout from "@/layouts/CustomerLayout";
 import { useRouter } from "next/router";
+import { API_URL } from "@/config";
+import { toast } from "react-toastify";
+import { useForm } from "react-hook-form";
+import errorCodes from "@/constant/ErrorCode";
+import successCodes from "@/constant/SuccessCode";
 
-export default function Auth() {
-  const { login, error, isLoading, user } = useContext(AuthContext);
+export default function Login() {
 
-  const [loginInfo, setLoginInfo] = useState({
-    username: "",
-    password: "",
-  });
+  const [error, setError] = useState([]);
+
+  const {
+    register,
+    formState: { errors },
+    handleSubmit,
+    reset,
+  } = useForm();
+
+  const onLogin = (data) => {
+    
+
+    // login with next-auth
+    signIn("credentials", {
+      username: data.username,
+      password: data.password,
+      callbackUrl: `${window.location.origin}/`,
+      redirect: false
+    }).then(function(data) {
+
+      if(data.error) {
+        toast.error(errorCodes.AUTHENTICATION_FAILURE);
+      } else {
+        toast.success(successCodes.AUTHENTICATION_SUCCESS);
+      }
+    }
+    
+    );
 
 
-  const [signUp, setSignUp] = useState({
-    username: "",
-    email: "",
-    password: "",
-    rePassword: ""
-  });
-
-
+  }
   const { data: session } = useSession();
   const token = session?.accessToken;
 
@@ -33,41 +54,6 @@ export default function Auth() {
     }
   }, [token]);
 
-  // handle sign up
-
-  //
-  const onSignUp = async (e) => {
-    e.preventDefault();
-
-    const resPos = await fetch(`${API_URL}/auth/register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(signUp),
-    });
-
-    // extract the JSON response body
-    let resData = await resPos.json();
-
-    if (!resPos.ok) {
-      toast.error(resData.message);
-      return;
-    } else {
-      toast.success("Register successfully !");
-    }
-    setRegister(false);
-  };
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-
-    signIn("credentials", {
-      username: loginInfo.username,
-      password: loginInfo.password,
-      callbackUrl: `${window.location.origin}/`,
-    });
-  };
 
   return (
     <section id="wsus__login_register">
@@ -90,7 +76,7 @@ export default function Auth() {
                     login
                   </button>
                 </li>
-                <li className="nav-item" role="presentation">
+                <li className="nav-item" role="presentation" onClick={() => router.push("/account/signUp")}>
                   <button
                     className="nav-link"
                     id="pills-profile-tab2"
@@ -113,23 +99,33 @@ export default function Auth() {
                   aria-labelledby="pills-home-tab2"
                 >
                   <div className="wsus__login">
-                    <form onSubmit={(e) => handleLogin(e)}>
+                    <form onSubmit={handleSubmit(onLogin)}>
                       <div className="wsus__login_input">
                         <i className="fas fa-user-tie" />
                         <input
                           type="text"
                           placeholder=""
                           className="w-4/6 rounded-md border-s-4 border-2 border-grey-100 mt-4 border-solid p-2"
-                          required
-                          value={loginInfo.username}
-                          onChange={(e) =>
-                            setLoginInfo({
-                              ...loginInfo,
-                              username: e.target.value,
-                            })
-                          }
+
+
+                        {...register("username", {
+                            required: errorCodes.USERNAME_IS_REQUIRED,
+                            minLength: {
+                              value: 5,
+                              message: errorCodes.USERNAME_IS_NOT_MEET,
+                            },
+                          })}
                         />
                       </div>
+
+                      <p>
+                        {" "}
+                        {errors.username && (
+                          <p className="text-red-600 ml-10 mt-2">
+                            {errors?.username.message || "Error"}
+                          </p>
+                        )}
+                      </p>
 
                       <div className="wsus__login_input">
                         <i className="fas fa-key" />
@@ -137,16 +133,33 @@ export default function Auth() {
                           type="password"
                           placeholder=""
                           className="w-4/6 rounded-md border-s-4 border-2 border-grey-100 mt-4 border-solid p-2"
-                          required
-                          value={loginInfo.password}
-                          onChange={(e) =>
-                            setLoginInfo({
-                              ...loginInfo,
-                              password: e.target.value,
-                            })
-                          }
+                        //   value={loginInfo.password}
+                        //   onChange={(e) =>
+                        //     setLoginInfo({
+                        //       ...loginInfo,
+                        //       password: e.target.value,
+                        //     })
+                        //   }
+
+                        {...register("password", {
+                            required: errorCodes.PASSWORD_IS_REQUIRED,
+                            minLength: {
+                              value: 6,
+                              message: errorCodes.PASSWORD_AT_LEAST,
+                            },
+                          })}
+
                         />
                       </div>
+                      <p>
+                        {" "}
+                        {errors.password && (
+                          <p className="text-red-600 ml-10 mt-2">
+                            {errors?.password.message || "Error"}
+                          </p>
+                        )}
+                      </p>
+
 
                       <div className="wsus__login_save">
                         <div className="form-check form-switch">
@@ -195,88 +208,6 @@ export default function Auth() {
                     </form>
                   </div>
                 </div>
-
-                {/* start sign up */}
-
-                <div
-                  className="tab-pane fade"
-                  id="pills-profiles"
-                  role="tabpanel"
-                  aria-labelledby="pills-profile-tab2"
-                >
-                  <div className="wsus__login">
-                    <form action="" onSubmit={onSignUp} method="post">
-                      <div className="wsus__login_input">
-                        <i className="fas fa-user-tie" />
-                        <input
-                          type="text"
-                          placeholder="Username"
-                          name="username"
-                          value={signUp.username}
-                          onChange={(e) =>
-                            setSignUp({ ...signUp, username: e.target.value })
-                          }
-                        />
-                      </div>
-                      <div className="wsus__login_input">
-                        <i className="far fa-envelope" />
-                        <input
-                          type="text"
-                          placeholder="Email"
-                          name="email"
-                          value={signUp.email}
-                          onChange={(e) =>
-                            setSignUp({ ...signUp, email: e.target.value })
-                          }
-                        />
-                      </div>
-                      <div className="wsus__login_input">
-                        <i className="fas fa-key" />
-                        <input
-                          type="text"
-                          placeholder="Password"
-                          name="password"
-                          value={signUp.password}
-                          onChange={(e) =>
-                            setSignUp({ ...signUp, password: e.target.value })
-                          }
-                        />
-                      </div>
-                      <div className="wsus__login_input">
-                        <i className="fas fa-key" />
-                        <input
-                          type="text"
-                          placeholder="Confirm Password"
-                          name="rePassword"
-                          value={signUp.rePassword}
-                          onChange={(e) =>
-                            setSignUp({ ...signUp, rePassword: e.target.value })
-                          }
-                        />
-                      </div>
-                      <div className="wsus__login_save">
-                        <div className="form-check form-switch">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id="flexSwitchCheckDefault03"
-                          />
-                          <label
-                            className="form-check-label"
-                            htmlFor="flexSwitchCheckDefault03"
-                          >
-                            I consent to the privacy policy
-                          </label>
-                        </div>
-                      </div>
-                      <button className="common_btn" type="submit">
-                        signup
-                      </button>
-                    </form>
-                  </div>
-                </div>
-
-                {/* end sign up */}
               </div>
             </div>
           </div>
@@ -285,4 +216,4 @@ export default function Auth() {
     </section>
   );
 }
-Auth.getLayout = (page) => <CustomerLayout>{page}</CustomerLayout>;
+Login.getLayout = (page) => <CustomerLayout>{page}</CustomerLayout>;

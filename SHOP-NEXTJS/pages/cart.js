@@ -90,7 +90,7 @@ function Cart(props) {
                   </div>
                 </div>
 
-                <CartSummary />
+                <CartSummary show={true}/>
               </div>
             </div>
 

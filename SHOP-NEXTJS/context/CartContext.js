@@ -15,12 +15,11 @@ export function CartProvider({ children }) {
   const { data: session } = useSession();
   const token = session?.accessToken;
 
-  useEffect(() => {
-    if (user) {
-      console.log("Ben trong useeffect cart context");
-      getCart();
-    }
-  }, [user]);
+  // useEffect(() => {
+  //   if (token) {
+  //     getCart();
+  //   }
+  // }, [token]);
 
   const getCart = async () => {
     const resGet = await fetch(`${API_URL}/cart/all_cart_items`, {
@@ -29,11 +28,13 @@ export function CartProvider({ children }) {
         Authorization: `Bearer ${token}`,
       },
     });
-    const dataGet = await resGet.json();
+  
 
     if (!resGet.ok) {
-      toast.error("Lỗi lấy danh sách sản phẩm giỏ hàng " + dataGet.message);
+      const dataGet = await resGet.text();
+      toast.error("Lỗi lấy danh sách sản phẩm giỏ hàng " + dataGet);
     } else {
+      const dataGet = await resGet.json();
       console.log("Ds cart la " + JSON.stringify(dataGet));
       setCart(dataGet);
     }
@@ -49,6 +50,7 @@ export function CartProvider({ children }) {
       body: JSON.stringify(payload),
     });
 
+    
     const dataPos = await resPos.json();
 
     if (!resPos.ok) {

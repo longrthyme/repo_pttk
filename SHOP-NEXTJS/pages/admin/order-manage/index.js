@@ -1,4 +1,5 @@
-import * as React from "react";
+
+import React, { Fragment, useContext, useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
@@ -11,6 +12,7 @@ import OrderContext from "@/context/OrderContext";
 import DataContext from "@/context/DataContext";
 import { Breadcrumb, Input } from "antd";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
 
@@ -48,7 +50,7 @@ export default function Orders() {
   const [value, setValue] = React.useState(0);
 
   const { searchOrderValue, setSearchOrderValue } =
-    React.useContext(DataContext);
+    useContext(DataContext);
 
   const { Search } = Input;
 
@@ -56,27 +58,27 @@ export default function Orders() {
     setValue(newValue);
   };
 
-  
-  const { data: session } = useSession();
+  const router = useRouter();
+
+  const { data: session , status} = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.push("/account/login")
+    },
+  });
   const token = session?.accessToken;
-
-
-  useEffect(() => {
-
-    if(session?.role == "CUSTOMER") {
-      router.push("/unauthorized")
-    }
-  } , [session]);
 
 
 
 
   const { orderManagement, updateOrderManagement } =
-    React.useContext(OrderContext);
+    useContext(OrderContext);
 
-  React.useEffect(() => {
-    updateOrderManagement();
-  }, []); // tạo ra hàm cập nhật giá trị cho state riêng
+  useEffect(() => {
+    if(token) {
+      updateOrderManagement();
+    }
+  }, [token]); 
 
   const setUpData = (option) => {
     switch (option) {
@@ -111,6 +113,12 @@ export default function Orders() {
         );
     }
   };
+
+  
+  if(status === "loading") {
+    return <SpinTip />
+  } else 
+
 
   return (
     <div className="p-4">

@@ -154,7 +154,7 @@ const ProductDetail = () => {
                           src={image.imageProduct}
                           width={100}
                           height={100}
-                          className="w-full h-auto"
+                          // className="w-full h-auto"
                         />
                       </div>
                     ))}
@@ -191,7 +191,7 @@ const ProductDetail = () => {
                       </h2>
                     </div>
                     <h2 className="text-blue-500 text-xl font-extralight text-md mt-2">
-                      {productDetail.category.name}
+                      Category : {productDetail.category.name}
                     </h2>
 
                     {/* Reviews */}

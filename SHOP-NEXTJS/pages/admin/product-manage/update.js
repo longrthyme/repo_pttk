@@ -6,7 +6,7 @@ import { Select } from "antd";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import DataContext from "@/context/DataContext";
-import { API_URL, NEXT_API } from "@/config";
+import { API_URL } from "@/config";
 import { toast } from "react-toastify";
 import router from "next/router";
 import SpinTip from "@/components/loading/SpinTip";
@@ -19,11 +19,6 @@ const ReactQuill = dynamic(import("react-quill"), {
 });
 
 function UpdateProduct(props) {
-  const router = useRouter();
-  const updateProdId = router.query.updateId;
-
-  const { listBrands, listCates, getProductAdmin, adminProducts } =
-    useContext(DataContext);
 
   const [state, setState] = useState({
     imagePreview: null,
@@ -35,26 +30,80 @@ function UpdateProduct(props) {
     imageData: null,
   });
 
-  const { defaultCate } = state;
+  const router = useRouter();
+
+  const [pathName, setPathName] = useState(router.asPath);
+
+  const { listBrands, listCates, getProductAdmin, adminProducts } =
+    useContext(DataContext);
 
   const [images, setImages] = useState([]);
   const [extraImage, setExtraImage] = useState([]);
   const [product, setProduct] = useState(null);
 
   
-  const { data: session } = useSession();
+  const { data: session , status} = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.push("/account/login")
+    },
+  });
   const token = session?.accessToken;
 
 
-  useEffect(() => {
-
-    if(session?.role == "CUSTOMER") {
-      router.push("/unauthorized")
-    }
-  } , [session]);
 
 
+    useEffect(() => {
 
+          /**
+     *  get productId updating, handle fetching cates and brands from DataContext 
+     * trường hợp reload chưa kịp lấy cate và brand
+     */
+      
+      const brandOpts = listBrands &&  listBrands.map((brand) => ({
+        value: brand.id,
+        label: brand.name,
+      }));
+  
+      
+      const cateOpts = listCates.map((cate) => ({
+        value: cate.id,
+        label: cate.name,
+      }));
+  
+      if (
+        listBrands.length > 0 &&
+        listCates.length > 0 &&
+        adminProducts.length > 0 &&
+        router.query.productId != null
+      ) {
+        let existedProduct = adminProducts.find(
+          (prod) => prod.id == router.query.productId
+        );
+  
+        setProduct(existedProduct);
+  
+        let valueBrand = listBrands.find(
+          (brand) => brand.id == existedProduct.brand.id
+        ).name;
+        let valueCate = listCates.find(
+          (cate) => cate.id == existedProduct.category.id
+        ).name;
+  
+        filterCate(existedProduct.brand.id);
+  
+        setState((prevState) => ({
+          ...prevState,
+          brandOptions: brandOpts,
+          defaultBrand: valueBrand, // selected
+          defaultCate: valueCate,
+          imagePreview: existedProduct.primaryImage,
+          isLoading: false,
+        }));
+      }
+    }, [listBrands, listCates, adminProducts, router.query.productId]); // 3 deps
+
+    
 
   // up extra images
   const changeImage = (e) => {
@@ -123,51 +172,6 @@ function UpdateProduct(props) {
     });
   };
 
-  // handle fetching cates and brands from DataContext - fetch API async
-  useEffect(() => {
-    // lấy ra các option brand
-    const brandOpts = listBrands &&  listBrands.map((brand) => ({
-      value: brand.id,
-      label: brand.name,
-    }));
-
-    // lay ra cac category options
-    const cateOpts = listCates.map((cate) => ({
-      value: cate.id,
-      label: cate.name,
-    }));
-
-    if (
-      listBrands.length > 0 &&
-      listCates.length > 0 &&
-      adminProducts.length > 0 &&
-      router.query.updateId != null
-    ) {
-      let existedProduct = adminProducts.find(
-        (prod) => prod.id == router.query.updateId
-      );
-
-      setProduct(existedProduct);
-
-      let valueBrand = listBrands.find(
-        (brand) => brand.id == existedProduct.brand.id
-      ).name;
-      let valueCate = listCates.find(
-        (cate) => cate.id == existedProduct.category.id
-      ).name;
-
-      filterCate(existedProduct.brand.id);
-
-      setState((prevState) => ({
-        ...prevState,
-        brandOptions: brandOpts,
-        defaultBrand: valueBrand, // selected
-        defaultCate: valueCate,
-        imagePreview: existedProduct.primaryImage,
-        isLoading: false,
-      }));
-    }
-  }, [listBrands, listCates, adminProducts, router.query.updateId]); // 3 deps
 
   // upload product
   const updateProduct = async () => {
@@ -200,7 +204,7 @@ function UpdateProduct(props) {
     }
     
     // ver    
-    const resPut = await fetch(`${API_URL}/products/${productId}`, {
+    const resPut = await fetch(`${API_URL}/products/${router.query.productId}`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -210,16 +214,22 @@ function UpdateProduct(props) {
 
     const dataPut = await resPut.json();
 
-    if (!resPos.ok) {
+    if (!resPut.ok) {
       toast.error(dataPut.message);
     } else {
-      router.push("/admin/products");
+      router.push("/admin/product-manage");
       getProductAdmin();
       toast.success("Cập nhật  sản phẩm thành công");
     }
 
     setState({ ...state, isLoading: false });
   };
+
+  
+  if(status === "loading") {
+    return <SpinTip />
+  } else 
+
 
   return (
     <div className="p-10 border-2 border-solid">
@@ -232,6 +242,11 @@ function UpdateProduct(props) {
               <div className="info-1">
                 <h2 className="font-medium  text-base">About</h2>
                 <p className="text-gray-700">Basic product information</p>
+                {state.primaryImagePrev ? (
+                  <img src={state.primaryImagePrev} alt="primary-image" width={150} height={150} />
+                ) : (
+                  <img src={product.primaryImage} alt="primary-image" width={150} height={150} />
+                )}
               </div>
             </Col>
             <Col flex="1">
@@ -323,18 +338,6 @@ function UpdateProduct(props) {
                     }
                   />
                 </div>
-
-                <div className="flex flex-col mt-6 ml-20">
-                  <label className="font-semibold"> Enabled </label>
-                  <Switch
-                    className="w-4"
-                    // defaultChecked
-                    checked={product.enabled}
-                    onClick={() =>
-                      setProduct({ ...product, enabled: !product.enabled })
-                    }
-                  />
-                </div>
               </div>
 
               <div className="flex items-center mt-8">
@@ -345,7 +348,7 @@ function UpdateProduct(props) {
                   className="rounded-full"
                 />
                 <label className="border px-4 text-white py-2 bg-primary-500 font-semibold ml-12 rounded-md hover:bg-primary-600">
-                  Upload primary image
+                  Upload
                   <Input
                     hidden
                     className="w-1/3 ml-8"
@@ -362,18 +365,6 @@ function UpdateProduct(props) {
                 </label>
               </div>
             </Col>
-          </Row>
-
-          <Row className="mt-4">
-            <div className="">
-              <Card style={{ width: 300, height: 300 }}>
-                {state.primaryImagePrev ? (
-                  <img src={state.primaryImagePrev} alt="primary-image" />
-                ) : (
-                  <img src={product.primaryImage} alt="primary-image" />
-                )}
-              </Card>
-            </div>
           </Row>
 
           <hr className="border-1 border-gray-200 mt-10" />
@@ -532,19 +523,11 @@ function UpdateProduct(props) {
           <Row className="mt-4">
             <div className="grid gap-4 grid-cols-3 place-items-center">
               {product.images.map((image, index) => (
-                <div key={index}>
-                  <Card style={{ width: 300, height: 300 }}>
-                    <img src={image.imageProduct} alt="extra-image" />
-                  </Card>
-                </div>
+                <img src={image.imageProduct} alt="extra-image" width={150} height={150} />
               ))}
               {images &&
                 images.map((image) => (
-                  <div key={image.name}>
-                    <Card style={{ width: 300, height: 300 }}>
-                      <img src={image.url} />
-                    </Card>
-                  </div>
+                  <img src={image.url} height={150} width={150} />
                 ))}
             </div>
           </Row>

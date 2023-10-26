@@ -6,11 +6,11 @@ import React from "react";
 function CardReview(props) {
   const { review } = props;
   return (
-    <div className="mt-4 p-2 flex flex-col rounded-2xl">
+    <div className="mt-4 p-2 flex flex-col rounded-2xl border border-grey-600 shadow-sm rounded-lg w-3/4">
       <div className="flex">
         <div>
           <Image
-            src={review.customer.imgURL}
+            src={review?.order.customer?.imgURL}
             width={50}
             height={50}
             className="rounded-full"
@@ -18,12 +18,12 @@ function CardReview(props) {
         </div>
 
         <div className="ml-4 flex flex-col ml-4">
-          <h2 className="font-bold">{review.customer.username}</h2>
-          <h2 className="opacity-70">
+          <p className="font-bold">{review?.order.customer.username}</p>
+          <props className="opacity-70">
             {moment(review.reviewTime).format("MMM Do YY")}
-          </h2>
+          </props>
           <Rating name="simple-controlled" value={review.rating} readOnly />
-          <h2 className="mt-2">Danh gia comment </h2>
+          <p className="mt-2">{review?.comment} </p>
         </div>
       </div>
     </div>

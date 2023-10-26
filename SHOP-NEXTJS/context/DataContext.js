@@ -41,25 +41,18 @@ export function DataProvider({ children }) {
   }, []);
 
   const getProductDetail = async (prodId) => {
-    // const resGet = await fetch(
-    //   `${NEXT_API}/api/products?action=get_detail&productId=${prodId}`,
-    //   {
-    //     method: "GET",
-    //   }
-    // );
-
-    // ver    
-    const resGet = await fetch(`${API_URL}/products/${productId}`, {
+      // ver  update
+    const resGet = await fetch(`${API_URL}/products/${prodId}`, {
       method: "GET",
     });
 
-    const dataPos = await resGet.json();
+    const dataGet = await resGet.json();
 
     if (!resGet.ok) {
-      toast.error("Error" + dataPos.message);
+      toast.error("Error" + dataGet.message);
     } else {
       
-      setProductDetail(dataGet.dataPos);
+      setProductDetail(dataGet);
     }
   };
 
@@ -203,27 +196,29 @@ export function DataProvider({ children }) {
 
   const getUserInformation = async () => {
     setState({ ...state, isLoading: true });
-    const response = await fetch(`${NEXT_API}/api/user`, {
+    const response = await fetch(`${API_URL}/user/get-information`, {
       method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
-
     const data = await response.json();
 
     if (!response.ok) {
-      return data.message;
+      toast.error("Lỗi lấy thông tin user " + data.message);
     } else {
-      console.log("User order are", JSON.stringify(data.user));
-      setUserInfo(data.user);
+      setUserInfo(data);
     }
     setState((prevState) => ({ ...prevState, isLoading: false }));
   };
 
   const addNewAddress = async (payload) => {
     setState({ ...state, isLoading: true });
-    const response = await fetch(`${NEXT_API}/api/user`, {
+    const response = await fetch(`${API_URL}/user/add-address`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(payload),
     });
@@ -234,7 +229,7 @@ export function DataProvider({ children }) {
       return data.message;
     } else {
       console.log("User info is " + JSON.stringify(data));
-      setUserInfo(data.user);
+      setUserInfo(data);
     }
     setState((prevState) => ({ ...prevState, isLoading: false }));
   };
@@ -243,8 +238,11 @@ export function DataProvider({ children }) {
   // get all users
   const getAllUser = async () => {
     setState({ ...state, isLoading: true });
+
+    console.log("Da vao getalluser " + token);
+
     // ver
-    const resGet = await fetch(`${API_URL}/admin/user_management/list`, {
+    const resGet = await fetch(`${API_URL}/admin/user-management/list`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -284,7 +282,7 @@ export function DataProvider({ children }) {
     getUserInformation,
     employees: state.employees,
     
-    allUser: allUser,
+    accounts: state.accounts,
     setAllUser,
     productDetail,
     getProductDetail,

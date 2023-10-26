@@ -8,20 +8,50 @@ import OrderContext from "@/context/OrderContext";
 
 function OrderSummary(props) {
   const { cart } = useContext(CartContext);
-  const {deliveryAddress } = useContext(OrderContext);
+  const { deliveryAddress } = useContext(OrderContext);
   return (
-    <div className="p-10">
+    <div>
       <AddressCard data={deliveryAddress} />
+      <div className="mt-8">
 
-      <div>
-        <div className="grid grid-cols-3 gap-4 mt-8">
-          <div className="col-span-2 ">
-            {cart.map((cartItem, index) => (
-              <CartItem data={cartItem} />
-            ))}
+      <div className="flex ">
+            <div className="col-xl-9 mr-8">
+              <div className="wsus__cart_list">
+                <div className="table-responsive">
+                  <table>
+                    <tbody>
+                      <tr className="d-flex">
+                        <th className="wsus__pro_img">product item</th>
+
+                        <th className="wsus__pro_name">product details</th>
+
+                        <th className="wsus__pro_status">status</th>
+
+                        <th className="wsus__pro_select">quantity</th>
+
+                        <th className="wsus__pro_tk">price</th>
+
+                        <th className="wsus__pro_icon">
+                          <a href="#" className="common_btn">
+                            clear cart
+                          </a>
+                        </th>
+                      </tr>
+
+                  
+
+                      {cart.map((cartItem, index) => (
+                        <CartItem data={cartItem} key={index} />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <CartSummary  option="checkout" show={false} />
           </div>
-          <CartSummary option="checkout" />
-        </div>
+        
       </div>
     </div>
   );

@@ -19,7 +19,7 @@ function AddressCard(props) {
           <div
             className={`border border-solid shadow-lg rounded-md p-4 mt-8  ${
               deliveryAddress && data.id == deliveryAddress.id
-                ? "border-primary-400 border-2"
+                ? "border-primary-400 border-2 bg-blue-200"
                 : ""
             }`}
             onClick={() => selectDeliverAddress()}

@@ -11,13 +11,36 @@ import { toast } from "react-toastify";
 // This value is from the props in the UI
 const style = { layout: "vertical" };
 
+
+
+function Payment(props) {
+
+  const [option, setOption] = useState();
+  const {setPaymentMethod, deliveryAddress, statusPayment, setStatusPayment} = useContext(OrderContext);
+  const {cart} = useContext(CartContext);
+
+  const router = useRouter();
+
+  const { getCart } = React.useContext(CartContext);
+
+  const { data: session } = useSession();
+const token = session?.accessToken;
+  
+
+  // create order
+  
+
 async function createOrder(cart, address) {
+
   if(address == null) {
     toast.error("Choose delivery address");
     return;
   }
   
   const totalCost = (cart.map((cartItem, index) => (cartItem.product.original_price - cartItem.product.original_price*cartItem.product.discount_percent)* (cartItem.quantity)).reduce((partialSum,a) => partialSum+a,0) + (cart.map((cartItem, index) => ((cartItem.product.discount_percent * cartItem.product.original_price))* (cartItem.quantity)).reduce((partialSum,a) => partialSum+a,0)) ).toFixed(2);
+
+
+  console.log("cart is " + JSON.stringify(cart));
 
   const requestBody = 
   {
@@ -49,12 +72,11 @@ async function createOrder(cart, address) {
         },
       ],
     },
-    address_id: address.id,
     method_payment: "PAY_PAL",
   }
   
   // ver
-  const resPos = await fetch(`${API_URL}/orders/checkout`, {
+  const resPos = await fetch(`${API_URL}/orders/checkout/paypal`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -72,30 +94,16 @@ async function createOrder(cart, address) {
 
 }
 
-function Payment(props) {
-
-  const [option, setOption] = useState();
-  const {setPaymentMethod, deliveryAddress, statusPayment, setStatusPayment} = useContext(OrderContext);
-  const {cart} = useContext(CartContext);
-
-  const router = useRouter();
-
-  const { getCart } = React.useContext(CartContext);
-
-  
-  const { data: session } = useSession();
-  const token = session?.accessToken;
-
   
 async function onApprove(data) {
   // ver
-  const resPos = await fetch(`${API_URL}/orders/success`, {
+  const resPos = await fetch(`${API_URL}/orders/confirm-payment`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ order_id: data.orderID, address_id: 1, payment_method: "PAY_PAL" }),
+    body: JSON.stringify({ order_id: data.orderID, address_id: 1}),
   });
   const postData = await resPos.json();
 
@@ -132,7 +140,7 @@ async function onApprove(data) {
       </div>
       <div>
         <input type="radio" name="optionPayment" value="CASH" onClick={paymentMethod} />
-        <span>Cash on delivery</span>
+        <span className="ml-4">Cash on delivery (COD)</span>
       </div>
     </div>
   );

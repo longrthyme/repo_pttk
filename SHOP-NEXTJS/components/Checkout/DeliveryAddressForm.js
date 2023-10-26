@@ -6,17 +6,24 @@ import SpinTip from "../loading/SpinTip";
 import { useRouter } from "next/router";
 import AuthContext from "@/context/AuthContext";
 import { deepPurple } from "@mui/material/colors";
+import { useSession } from "next-auth/react";
 
 function DeliveryAddressForm(props) {
   const { addNewAddress, userInfo, getUserInformation, isLoading } = useContext(DataContext);
-  const { user } = useContext(AuthContext);
+  
   const router = useRouter();
+
+    
+  
+  const { data: session } = useSession();
+  const token = session?.accessToken;
+
   
   useEffect(() => {
-    if(user) {
+    if(token) {
       getUserInformation();
     }
-  }, [user]);   // deps: handle khi context chưa kịp fetch, trigger changes
+  }, [token]);   // deps: handle khi context chưa kịp fetch, trigger changes
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -38,21 +45,22 @@ function DeliveryAddressForm(props) {
       {
         userInfo != null && <>
         {isLoading? <SpinTip /> : <Grid container spacing={2} className="mt-4">
+        
         <Grid
           item
           xs={12}
           sm={4}
           className="border rounded-e-md shadow-md overflow-y-scroll"
         >
+          <p>Choose delivery address </p>
           <div className="border-b cursor-pointer p-5 py-7">
             {
               userInfo.addresses.map((address, index) => <AddressCard data={address} key={index} />)
             }
-            <button className="hover:cursor-pointer mt-4 bg-primary-400 text-white font-semibold px-4 py-1.5 rounded-sm" type="button" onClick={() => router.push("/checkout?step=2")}>
-              DELIVERY HERE
-            </button>
           </div>
         </Grid>
+
+              {/* start form add new address */}
         <Grid item container xs={12} sm={7}>
           <Box className="border rounded-s-md shadow-md p-5">
             <form onSubmit={handleSubmit}>
@@ -120,6 +128,8 @@ function DeliveryAddressForm(props) {
             </form>
           </Box>
         </Grid>
+
+            {/* end form add new */}
       </Grid>}
         </>
       }

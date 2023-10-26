@@ -13,80 +13,83 @@ import { Input } from "antd";
 import AuthContext from "@/context/AuthContext";
 import SpinTip from "../loading/SpinTip";
 import { handleImageUpload } from "@/utils/uploadImage";
-import { NEXT_API } from "@/config";
+import { API_URL, NEXT_API } from "@/config";
 import { toast } from "react-toastify";
 import DataContext from "@/context/DataContext";
+import { useSession } from "next-auth/react";
+import { useForm } from "react-hook-form";
+import errorCodes from "@/constant/ErrorCode";
 
 function UpdateInformation(props) {
   const { children, value, index, ...other } = props;
 
-  const { user } = useContext(AuthContext);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const [optionShow, setOptionShow] = useState(false);
-  
+  const { getUserInformation, userInfo } = useContext(DataContext);
+
+  const [userData, setUserData] = useState(null);
+
+  const { data: session } = useSession();
+  const token = session?.accessToken;
+
   useEffect(() => {
-    if (user) {
-      console.log("User updare info ", JSON.stringify(user));
-      setUserData(user);
+    if (token) {
+      getUserInformation();
     }
-  }, [user]);
+  }, [token]);
+
+  useEffect(() => {
+    if (userInfo) {
+      setUserData(userInfo);
+    }
+  }, [userInfo]);
 
   const [image, setImage] = useState({
     imageData: null,
     imagePrev: null,
   });
-  //   const [userData, setUserData] = useState({
-  //     name: "",
-  //     phoneNumber: "",
-  //     email:"",
-  //     username: ""
-  //   });
 
-  const [userData, setUserData] = useState(null);
+  const {
+    register,
+    formState: { errors },
+    handleSubmit,
+    reset,
+  } = useForm();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
+  console.log("User data " + JSON.stringify(userData));
 
-    let user_img = "";
-
-    if (image.imageData != null) {
-      const imgUrl = await handleImageUpload(image.imageData)
-        .then((res) => res)
-        .then((data) => data);
-
-      setUserData((prevState) => ({ ...prevState, imgURL: imgUrl }));
-
-      user_img = imgUrl;
-    }
-
+  const onSaveInformation = async (data) => {
+    setIsSaving(true);
     const payload = {
-      name: userData.name,
-      phoneNumber: userData.phoneNumber,
-      imgURL: user_img ? user_img : "",
+      name: data.name,
+      phone_number: data.phoneNumber,
     };
 
-   
+    const formData = new FormData();
+
+    const json = JSON.stringify(payload);
+    const blob = new Blob([json], {
+      type: "application/json",
+    });
+
+    formData.append("user", blob);
+    formData.append("image", image.imageData);
     //ver
-    const resGet = await fetch(`${API_URL}/user/update_profile`, {
+    const resGet = await fetch(`${API_URL}/user/update-profile`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
       },
-      body: JSON.stringify(payload),
+      body: formData,
     });
 
-    const dataGet = await resGet.json();
-
-
     if (!resGet.ok) {
+      const dataGet = await resGet.json();
       toast.error(dataGet.message);
     } else {
-      toast.success("Update successfull");
+      toast.success("Updated successfully!");
     }
-    setIsLoading(false);
+    setIsSaving(false);
   };
 
   return (
@@ -97,173 +100,188 @@ function UpdateInformation(props) {
       aria-labelledby={`simple-tab-${index}`}
       {...other}
     >
-      {isLoading ? (
-        <SpinTip />
-      ) : (
-        <>
-          {value === index && userData ? (
-            <form onSubmit={handleSubmit}>
-              <Box sx={{ p: 3 }}>
-                <div className="flex flex-col justify-around">
-                  <Grid
-                    container
-                    rowSpacing={1}
-                    columnSpacing={{ xs: 1, sm: 2, md: 3 }}
-                  >
-                    <Grid item xs={6}>
-                      <div className="flex items-center">
-                        <div>
-                          <Image
-                            className="rounded-xl"
-                            src={
-                              userData.imgURL
-                                ? userData.imgURL
-                                : image.imagePrev
-                                ? image.imagePrev
-                                : logo_upload
+      {userData ? (
+        <form onSubmit={handleSubmit(onSaveInformation)}>
+          <Box sx={{ p: 3 }}>
+            <div className="flex flex-col justify-around">
+              <Grid
+                container
+                rowSpacing={1}
+                columnSpacing={{ xs: 1, sm: 2, md: 3 }}
+              >
+                <Grid item xs={6}>
+                  <div className="flex items-center">
+                    <div>
+                      <Image
+                        className="rounded-xl"
+                        src={
+                          userData.imgURL
+                            ? userData.imgURL
+                            : image.imagePrev
+                            ? image.imagePrev
+                            : logo_upload
+                        }
+                        width={150}
+                        height={150}
+                        alt="user_icon"
+                      />
+                    </div>
+                    <div className="flex flex-col justify-center items-center ">
+                      <label
+                        className="border px-4 text-white py-2 bg-primary-500 font-semibold ml-12 rounded-md hover:bg-primary-600"
+                        tabIndex="0"
+                        role="button"
+                        htmlFor="account-settings-upload-image"
+                      >
+                        Upload New Photo
+                        <input
+                          hidden
+                          type="file"
+                          accept="image/png, image/jpeg"
+                          id="account-settings-upload-image"
+                          onChange={(e) => {
+                            if (e.target.files[0]) {
+                              setImage({
+                                imageData: e.target.files[0],
+                                imagePrev: URL.createObjectURL(
+                                  e.target.files[0]
+                                ),
+                              });
                             }
-                            width={150}
-                            height={150}
-                            alt="user_icon"
-                          />
-                        </div>
-                        <div className="flex flex-col justify-center items-center ">
-                          <label
-                            className="border px-4 text-white py-2 bg-primary-500 font-semibold ml-12 rounded-md hover:bg-primary-600"
-                            tabIndex="0"
-                            role="button"
-                            htmlFor="account-settings-upload-image"
-                          >
-                            Upload New Photo
-                            <input
-                              hidden
-                              type="file"
-                              accept="image/png, image/jpeg"
-                              id="account-settings-upload-image"
-                              onChange={(e) => {
-                                if (e.target.files[0]) {
-                                  setImage({
-                                    imageData: e.target.files[0],
-                                    imagePrev: URL.createObjectURL(
-                                      e.target.files[0]
-                                    ),
-                                  });
-                                }
-                              }}
-                            />
-                            <span className="MuiTouchRipple-root css-w0pj6f"></span>
-                          </label>
+                          }}
+                        />
+                        <span className="MuiTouchRipple-root css-w0pj6f"></span>
+                      </label>
 
-                          <p className="mt-4 font-extralight opacity-70">
-                            Allowed PNG or JPEG
-                          </p>
-                        </div>
-                      </div>
-                    </Grid>
-                  </Grid>
-
-                  <div className="mt-8">
-                    <Grid
-                      container
-                      rowSpacing={1}
-                      columnSpacing={{ xs: 1, sm: 2, md: 3 }}
-                    >
-                      <Grid item xs={6}>
-                        <FormControl fullWidth>
-                          <InputLabel htmlFor="component-outlined">
-                            Name
-                          </InputLabel>
-                          <OutlinedInput
-                            id="component-outlined"
-                            defaultValue=""
-                            label="Name"
-                            name="name"
-                            value={userData.name}
-                            onChange={(e) =>
-                              setUserData({ ...userData, name: e.target.value })
-                            }
-                          />
-                        </FormControl>
-                      </Grid>
-                      <Grid item xs={6}>
-                        <FormControl fullWidth>
-                          <InputLabel htmlFor="component-outlined">
-                            Phone number
-                          </InputLabel>
-                          <OutlinedInput
-                            id="component-outlined"
-                            defaultValue=""
-                            name="phone"
-                            label="Phone number"
-                            value={userData.phoneNumber}
-                            onChange={(e) =>
-                              setUserData({
-                                ...userData,
-                                phoneNumber: e.target.value,
-                              })
-                            }
-                          />
-                        </FormControl>
-                      </Grid>
-                      <Grid item xs={6}>
-                        <div className="mt-8">
-                          <FormControl fullWidth>
-                            <InputLabel htmlFor="component-outlined">
-                              Email
-                            </InputLabel>
-                            <OutlinedInput
-                              id="component-outlined"
-                              defaultValue="abc@gmail.com"
-                              label="Name"
-                              //   disabled={true}
-                              value={userData.email}
-                              onChange={(e) =>
-                                setUserData({ ...state, email: e.target.value })
-                              }
-                            />
-                          </FormControl>
-                        </div>
-                      </Grid>
-                      <Grid item xs={6}>
-                        <div className="mt-8">
-                          <FormControl fullWidth>
-                            <InputLabel htmlFor="component-outlined">
-                              Username
-                            </InputLabel>
-                            <OutlinedInput
-                              id="component-outlined"
-                              defaultValue="abc"
-                              label="Name"
-                              //   disabled={true}
-                              value={userData.username}
-                              onChange={(e) =>
-                                setUserData({
-                                  ...state,
-                                  username: e.target.value,
-                                })
-                              }
-                            />
-                          </FormControl>
-                        </div>
-                      </Grid>
-                    </Grid>
+                      <p className="mt-4 font-extralight opacity-70">
+                        Allowed PNG or JPEG
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </Box>
-              <div className="">
-                <button
-                  className="bg-primary-600 text-white hover:bg-primary-400 font-semibold rounded-md px-4 py-2 mt-6 border border-1 border-solid rounded-md self-center ml-10"
-                  type="submit"
+                </Grid>
+              </Grid>
+
+              <div className="mt-8">
+                <Grid
+                  container
+                  rowSpacing={1}
+                  columnSpacing={{ xs: 1, sm: 2, md: 3 }}
                 >
-                  Save
-                </button>
+                  <Grid item xs={6}>
+                    <FormControl fullWidth>
+                      <InputLabel htmlFor="component-outlined">Name</InputLabel>
+                      <OutlinedInput
+                        id="component-outlined"
+                        defaultValue=""
+                        label="Name"
+                        value={userData.name}
+                        {...register("name", {
+                          required: errorCodes.NAME_USER_IS_REQUIRED,
+                          onChange: (e) =>
+                            setUserData({ ...userData, name: e.target.value }),
+                        })}
+                      />
+                    </FormControl>
+                    <p>
+                      {" "}
+                      {errors.name && (
+                        <p className="text-red-600  mt-2">
+                          {errors?.name.message || "Error"}
+                        </p>
+                      )}
+                    </p>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <FormControl fullWidth>
+                      <InputLabel htmlFor="component-outlined">
+                        Phone number
+                      </InputLabel>
+                      <OutlinedInput
+                        id="component-outlined"
+                        value={userData.phoneNumber}
+                        {...register("phoneNumber", {
+                          required: errorCodes.PHONE_NUMBER_IS_REQUIRED,
+                          pattern: {
+                            value: /^([+]\d{2})?\d{10}$/,
+                            message: errorCodes.PHONE_NUMBER_NOT_CORRECT_FORMAT,
+                          },
+                          onChange: (e) => {
+                            setUserData({
+                              ...userData,
+                              phoneNumber: e.target.value,
+                            });
+                          },
+                        })}
+                      />
+                    </FormControl>
+                    <p>
+                      {" "}
+                      {errors.phoneNumber && (
+                        <p className="text-red-600 mt-2">
+                          {errors?.phoneNumber.message || "Error"}
+                        </p>
+                      )}
+                    </p>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <div className="mt-8">
+                      <FormControl fullWidth>
+                        <InputLabel htmlFor="component-outlined">
+                          Email
+                        </InputLabel>
+                        <OutlinedInput
+                          disabled
+                          id="component-outlined"
+                          defaultValue="abc@gmail.com"
+                          label="Name"
+                          value={userData.email}
+                          onChange={(e) =>
+                            setUserData({ ...state, email: e.target.value })
+                          }
+                        />
+                      </FormControl>
+                    </div>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <div className="mt-8">
+                      <FormControl fullWidth>
+                        <InputLabel htmlFor="component-outlined">
+                          Username
+                        </InputLabel>
+                        <OutlinedInput
+                          disabled
+                          id="component-outlined"
+                          defaultValue="abc"
+                          label="Name"
+                          //   disabled={true}
+                          value={userData.username}
+                          onChange={(e) =>
+                            setUserData({
+                              ...state,
+                              username: e.target.value,
+                            })
+                          }
+                        />
+                      </FormControl>
+                    </div>
+                  </Grid>
+                </Grid>
               </div>
-            </form>
-          ) : (
-            <SpinTip />
-          )}
-        </>
+            </div>
+          </Box>
+          <div className="">
+            <button
+              className="bg-primary-600 text-white hover:bg-primary-400 font-semibold rounded-md px-4 py-2 mt-6 border border-1 border-solid rounded-md self-center ml-10"
+              type="submit"
+            >
+              Save
+            </button>
+          </div>
+        </form>
+      ) : (
+        <SpinTip content="Đang loading....." />
       )}
+      {isSaving ? <SpinTip content="Đang lưu...." /> : ""}
     </div>
   );
 }

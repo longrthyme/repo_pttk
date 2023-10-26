@@ -1,14 +1,16 @@
 import HeaderStats from "@/components/Header/HeaderStats";
 import { OverviewSales } from "@/components/Overview/OverviewSales";
 import SpinTip from "@/components/loading/SpinTip";
-import { NEXT_API } from "@/config";
+import { API_URL, NEXT_API } from "@/config";
 import AdminLayout from "@/layouts/AdminLayout";
 import { Grid } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import { Doughnut } from "react-chartjs-2";
 import { toast } from "react-toastify";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+import { Bar, Doughnut } from "react-chartjs-2";
+import MonthRevenue from "@/components/Dashboard/MonthRevenue";
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 export const options = {
@@ -24,44 +26,54 @@ export const options = {
   },
 };
 
+
+
 function Dashboard(props) {
   const [loading, setLoading] = useState(true);
 
   const [report, setReport] = useState(null);
   const [category, setCategory] = useState(null);
 
-  
-  const { data: session } = useSession();
+  const router = useRouter();
+
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.push("/account/login");
+    },
+  });
   const token = session?.accessToken;
 
+//   const labels = ['January', 'February', 'March', 'April', 'May', 'June', 'July'];
+
 
   useEffect(() => {
+    if (token) {
+      (async () => {
+        setLoading(true);
 
-    if(session?.role == "CUSTOMER") {
-      router.push("/unauthorized")
+        const response = await fetch(`${API_URL}/admin/dashboard`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        const restData = await response.json();
+
+        console.log("Resdata dash " + JSON.stringify(restData));
+        if (!response.ok) {
+          toast.error("Error" + restData.message);
+        } else {
+          setReport(restData?.report);
+          setCategory(restData?.category);
+
+          setLoading(false);
+        }
+      })();
     }
-  } , [session]);
-
-
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
-
-      const response = await fetch(`${NEXT_API}/api/dashboard`, {
-        method: "GET",
-      });
-
-      const restData = await response.json();
-      if (!response.ok) {
-        toast.error("Error" + restData.message);
-      } else {
-        setReport(restData.dashboard.report);
-        setCategory(restData.dashboard.category);
-
-        setLoading(false);
-      }
-    })();
-  }, []);
+  }, [token]);
 
   const data = {
     labels: category && category.map((o) => o.name),
@@ -90,11 +102,27 @@ function Dashboard(props) {
     ],
   };
 
-  return (
-    <div>
-      {loading ? <SpinTip /> : report ? <HeaderStats data={report} /> : ""}
+  if (status === "loading") {
+    return <SpinTip />;
+  } else
+    return (
+      <div>
+        {
+          report && <HeaderStats data={report} />
+        }
 
-      <Grid container className="mt-10">
+        {category && (
+          <Grid item xs={6}>
+            <div className="h-3/12 w-3/12 ml-2 mt-8">
+              <p className="font-semibold opacity-70">Top seller category</p>
+              <Doughnut data={data} options={options} />
+            </div>
+          </Grid>
+        )}
+
+<MonthRevenue />
+
+        {/* <Grid container className="mt-10">
         <Grid item xs={6}>
           <OverviewSales
             chartSeries={[
@@ -113,7 +141,7 @@ function Dashboard(props) {
 
         <Grid item xs={6} >
           <div className="h-8/12 w-8/12 ml-2">
-            <h2 className="font-semibold opacity-70">Top seller category</h2>
+            <p className="font-semibold opacity-70">Top seller category</p>
             {loading ? (
               <SpinTip />
             ) : category ? (
@@ -123,9 +151,9 @@ function Dashboard(props) {
             )}
           </div>
         </Grid>
-      </Grid>
-    </div>
-  );
+      </Grid> */}
+      </div>
+    );
 }
 
 Dashboard.getLayout = (page) => <AdminLayout>{page}</AdminLayout>;

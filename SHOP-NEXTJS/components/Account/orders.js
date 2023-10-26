@@ -5,17 +5,32 @@ import { toast } from "react-toastify";
 import UserOrderCard from "../Order/UserOrderCard";
 import Image from "next/image";
 import empty_cart1 from "../../public/images/empty_cart1.png";
+import { useSession } from "next-auth/react";
+import OrderContext from "@/context/OrderContext";
 
 function UserOrder(props) {
-  const { userOrder } = useContext(AuthContext);
+  const { userOrders, getAllUserOrders } = useContext(OrderContext);
+
+  const { data: session } = useSession();
+  const token = session?.accessToken;
+
+
+  useEffect(() => {
+
+    if(session) {
+      getAllUserOrders()
+    }
+  }, [session]);
+
+
 
   return (
     <div>
-      {userOrder.length == 0 ? (
-        <Image src={empty_cart1} width={400} height={400} alt="empty_cart" className="center" />
+      {userOrders.length == 0 ? (
+        <image src={empty_cart1} width={100} height={100} alt="empty_cart" className="center" />
       ) : (
         <>
-          {userOrder.map((order, index) => (
+          {userOrders.map((order, index) => (
             <UserOrderCard data = {order}  key={index}/>
           ))}
         </>

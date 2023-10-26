@@ -6,8 +6,8 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import CartContext from "@/context/CartContext";
 import { useSession } from "next-auth/react";
-
-
+import logo_2 from "../public/images/logo_2.png";
+import { Image } from "antd";
 
 export default function Header() {
   const { user, logout } = useContext(AuthContext);
@@ -28,16 +28,6 @@ export default function Header() {
   const { data: session } = useSession();
   const token = session?.accessToken;
 
-
-  const openProfile = Boolean(anchorEl);
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  console.log("User info is " , JSON.stringify(user ) , " user 1 ", user);
 
   useEffect(() => {
     if (user != null) {
@@ -72,9 +62,9 @@ export default function Header() {
           </div>
         </div>
         <div className="col-xl-2 col-7 col-md-8 col-lg-2">
-          <div className="wsus_logo_area">
-            <a className="wsus__header_logo" href="index.html">
-              <img src="images/logo_2.png" alt="logo" className="img-fluid w-100" />
+          <div className="">
+            <a className="" href="/">
+              <img width={80} height={80} src="https://amushurtownia.pl/wp-content/uploads/2017/09/bartfan-logo.png" alt="logo" className="" />
             </a>
           </div>
         </div>
@@ -93,16 +83,16 @@ export default function Header() {
                 <i className="fas fa-user-headset" />
               </div>
               <div className="wsus__call_text">
-                <p>test@gmail.com</p>
+                <p>tester@gmail.com</p>
                 <p>+840225335</p>
               </div>
             </div>
            {
             session?.role == "CUSTOMER" ? 
             <ul className="wsus__icon_area">
-            <li><a href="wishlist.html"><i className="fas fa-heart" /><span>05</span></a></li>
-            <li><a href="compare.html"><i className="fas fa-random" /><span>03</span></a></li>
-            <li><a className="wsus__cart_icon" href="/cart"><i className="fas fa-shopping-bag" /><span>04</span></a></li>
+            <li><a href="wishlist.html"><i className="fas fa-heart" /><span>00</span></a></li>
+            {/* <li><a href="compare.html"><i className="fas fa-random" /><span>00</span></a></li> */}
+            <li><a className="wsus__cart_icon" href="/cart"><i className="fas fa-shopping-bag" /><span> {cart.length}</span></a></li>
           </ul>
           : ""
            }

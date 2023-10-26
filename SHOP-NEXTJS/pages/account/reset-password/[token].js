@@ -30,7 +30,7 @@ function UpdatePassword(props) {
     e.preventDefault();
 
     setIsLoading(true);
-    const resPos = await fetch(`${API_URL}/reset_password`, {
+    const resPos = await fetch(`${API_URL}/reset-password`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

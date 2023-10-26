@@ -8,9 +8,9 @@ import { toast } from "react-toastify";
 import { API_URL } from "@/config";
 import SpinTip from "@/components/loading/SpinTip";
 import { BiSolidEdit } from "react-icons/bi";
-import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import { Image } from "@mui/icons-material";
 
 function Brands(props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -41,17 +41,13 @@ function Brands(props) {
 
   const router = useRouter();
 
-  const { data: session } = useSession();
+  const { data: session , status} = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.push("/account/login")
+    },
+  });
   const token = session?.accessToken;
-
-  useEffect(() => {
-
-    if(session?.role == "CUSTOMER") {
-      router.push("/unauthorized")
-    }
-  } , [session]);
-
-
 
   useEffect(() => {
     if (searchValue) {
@@ -239,13 +235,14 @@ function Brands(props) {
       render: (_, record) => (
         <div className="flex items-center">
           {record.categories.map((cate) => (
-            <td class="border-b border-gray-200 bg-white px-5 py-5 text-sm flex ">
-              <Image
+            <td class="text-sm flex ">
+              <img
                 src={cate.imageUrl}
                 width={20}
                 height={20}
                 className="rounded-full"
               />
+              
               <span class="rounded-full bg-red-200 px-3 py-1 text-xs font-semibold text-red-900">
                 {cate.name}
               </span>
@@ -255,7 +252,7 @@ function Brands(props) {
       ),
     },
     {
-      title: "Sale Product",
+      title: "Number category",
       dataIndex: "",
       key: "",
       responsive: ["sm"],
@@ -282,6 +279,12 @@ function Brands(props) {
       ),
     },
   ];
+
+  
+  if(status === "loading") {
+    return <SpinTip />
+  } else 
+
 
   return (
     <Fragment>
