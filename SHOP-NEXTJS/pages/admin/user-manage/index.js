@@ -4,12 +4,9 @@ import DataContext from "@/context/DataContext";
 import AdminLayout from "@/layouts/AdminLayout";
 import { ExclamationCircleFilled, UserOutlined } from "@ant-design/icons";
 import { Grid } from "@mui/material";
-import { Breadcrumb, Image, Input, Modal, Switch, Table, Tag } from "antd";
+import { Breadcrumb, Image, Input, Modal, Switch, Table } from "antd";
 import React, { Fragment, useContext, useEffect, useState } from "react";
-import { AiOutlineMail } from "react-icons/ai";
 import { BiSolidEdit } from "react-icons/bi";
-import { BsTelephone } from "react-icons/bs";
-import { MdWifiPassword } from "react-icons/md";
 import { toast } from "react-toastify";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
@@ -22,7 +19,6 @@ import Swal from "sweetalert2";
 import {
   EmailRounded,
   PasswordRounded,
-  PhoneAndroid,
   PhoneAndroidOutlined,
 } from "@mui/icons-material";
 const options = [
@@ -42,6 +38,8 @@ function Products(props) {
 
   const [isAdding, setIsAdding] = useState(false);
 
+  const [updateAccountId, setUpdateAccountId] = useState();
+
   const MySwal = withReactContent(Swal);
 
   let {
@@ -50,7 +48,6 @@ function Products(props) {
     handleSubmit,
     reset,
     control,
-    watch,
   } = useForm();
 
   const { confirm } = Modal;
@@ -115,9 +112,9 @@ function Products(props) {
       } else {
         if (lock.accountStatus) toast.error("Deactive account !");
         else toast.success("Active account!");
-        getAllUser();
-        setLock({ ...lock, isOpenLock: false });
+        getAllUser();        
       }
+      setLock({ ...lock, isOpenLock: false });
     })();
   }
 
@@ -161,9 +158,21 @@ function Products(props) {
     setImagePreview(URL.createObjectURL(event.target.files[0]));
   };
 
-  const addNewUser = async (data) => {
+  const onSubmitAddUser = async (data) => {
     const resPos = await fetch(`${API_URL}/admin/user-management/add`, {
       method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: data,
+    });
+
+    return resPos;
+  };
+
+  const onSubmitUpdateUser = async (data) => {
+    const resPos = await fetch(`${API_URL}/admin/user-management/update/${updateAccountId}`, {
+      method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -176,7 +185,7 @@ function Products(props) {
   const updateInfoUser = (accountId) => {
     setIsModalOpen(true);
 
-    // setUpdateUser(accountId);
+    setUpdateAccountId(accountId);
 
     console.log("List accounts is " + JSON.stringify(accounts));
 
@@ -186,13 +195,15 @@ function Products(props) {
 
     setIsUpdating(true);
 
-    setImagePreview(account.imgURL);
+    // setImagePreview(account.imgURL);
+
+    console.log("Update user is " + JSON.stringify(account));
 
     setUpdatedUser({
       username: account.username,
       email: account.email,
       name: account.name,
-      phone: account.phone,
+      phone: account.phoneNumber,
       roles: account.roles.map((role) => ({
         value: role.name,
         label: role.description,
@@ -201,7 +212,9 @@ function Products(props) {
   };
   const onSubmitAdd = async (data) => {
     setIsAdding(true);
-    alert("Data " + JSON.stringify(data));
+
+    alert("Data upload " + JSON.stringify(data));
+    
 
     const formData = new FormData();
 
@@ -229,10 +242,10 @@ function Products(props) {
 
     if (!isUpdating) {
       //add
-      result = addNewUser(formData);
+      result = onSubmitAddUser(formData);
     } else {
       // update
-      result = updateInfoUser(formData);
+      result = onSubmitUpdateUser(formData);
     }
 
     result
@@ -243,49 +256,36 @@ function Products(props) {
         return res.json();
       })
       .then((data) => {
-        MySwal.fire("Thành công", "Đã thêm thành công", "success");
+        MySwal.fire("Thành công", isUpdating ? "Cap nhat thanh cong " : "Đã thêm thành công", "success");
         setIsModalOpen(false);
         getAllUser();
-        isUpdating && setIsUpdating(false);
-        reset();
-        isAdding && setIsAdding(false);
+        
       })
       .catch((err) => {
         if (typeof err.json === "function") {
           err.json().then((body) => {
-            MySwal.fire("Failure!", body.message, "error");
+            
+            MySwal.fire("Failure!", body.message + "", "error");
           });
         } else {
-          MySwal.fire("Failure!", body, "error");
+          MySwal.fire("Failure!", err, "error");
         }
+      }).finally(() => {
+        
+        setIsUpdating(false);
+        setIsAdding(false);
+        reset();
+        setImagePreview(null);
       });
   };
 
   const handleCancel = () => {
     console.log("Da vao cancel modal");
     setIsModalOpen(false);
-
+    setIsAdding(false);
     setIsUpdating(false);
-    reset({});
+    reset();
   };
-
-  // // update user info
-  // async function updateUser() {
-
-  //   setIsUpdating(true);
-  //   setIsModalOpen(true);
-
-  //   const resPos = await fetch(`${API_URL}/admin/user-management/add`, {
-  //     method: "POST",
-  //     headers: {
-  //       Authorization: `Bearer ${token}`,
-  //     },
-  //     body: data,
-  //   });
-
-  //   return resPos;
-
-  // }
 
   const columns = [
     {
@@ -466,7 +466,7 @@ function Products(props) {
             <SpinTip content="Đang xử lý đợi xíu....." />
           ) : (
             <Modal
-              title="Add new user"
+              title= {isUpdating ? "Updating user" : "Add new user"} 
               open={isModalOpen}
               onOk={handleSubmit(onSubmitAdd)}
               onCancel={handleCancel}
@@ -542,7 +542,7 @@ function Products(props) {
                     control={control}
                     name="password"
                     rules={{
-                      required: errorCodes.PASSWORD_IS_REQUIRED,
+                      required: isUpdating ? false : errorCodes.PASSWORD_IS_REQUIRED,
                       minLength: {
                         value: 6,
 
@@ -639,7 +639,7 @@ function Products(props) {
                     control={control}
                     name="phone"
                     rules={{
-                      required: errorCodes.PHONE_NUMBER_IS_REQUIRED,
+                      // required: errorCodes.PHONE_NUMBER_IS_REQUIRED,
                       pattern: {
                         value: /^([+]\d{2})?\d{10}$/,
                         message: errorCodes.PHONE_NUMBER_NOT_CORRECT_FORMAT,
@@ -704,7 +704,7 @@ function Products(props) {
                         type="file"
                         accept="image/*"
                         {...register("image", {
-                          required: errorCodes.IMAGE_REQUIRED,
+                          required: isUpdating ? false : errorCodes.IMAGE_REQUIRED,
                           onChange: (e) =>
                             setImagePreview(
                               URL.createObjectURL(e.target.files[0])

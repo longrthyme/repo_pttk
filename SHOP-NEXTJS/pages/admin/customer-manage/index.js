@@ -46,6 +46,9 @@ export default function Employee(req, res) {
   const token = session?.accessToken;
 
 
+  console.log("Ds filterEmployees " + JSON.stringify(filterEmployees));
+
+
   useEffect(() => {
     if(token) {
       getAllCustomer();
@@ -120,6 +123,16 @@ export default function Employee(req, res) {
     },
 
     {
+      title: "No.Orders",
+      responsive: ["sm"],
+      render: (_, record) => (
+        <div className="flex items-center">
+          <p className=" text-center hover:cursor-pointer text-xl hover:text-primary-700" >{record.orders.length}</p>
+        </div>
+      ),
+    },
+
+    {
       title: "Enabled",
       dataIndex: "enabled",
       key: "enabled",
@@ -172,17 +185,8 @@ export default function Employee(req, res) {
           }}
         />
       ),
-    },
-
-    {
-      title: "Action",
-      responsive: ["sm"],
-      render: (_, record) => (
-        <div className="flex items-center">
-          <BiSolidEdit className="hover:cursor-pointer text-xl hover:text-primary-700" />
-        </div>
-      ),
-    },
+    }
+  
   ];
 
   

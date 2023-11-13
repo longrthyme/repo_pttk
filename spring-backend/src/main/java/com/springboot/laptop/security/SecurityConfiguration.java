@@ -52,7 +52,6 @@ public class SecurityConfiguration {
                 .build();
     }
 
-
     @Autowired
     void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userDetailsService).passwordEncoder(new BCryptPasswordEncoder());
@@ -88,14 +87,6 @@ public class SecurityConfiguration {
         bean.setTemplateLoaderPath("classpath:/templates");
         return bean;
     }
-
-
-//    passed context when create new thread with async
-//    @Bean
-//    public InitializingBean initializingBean() {
-//        return () -> SecurityContextHolder.setStrategyName(
-//                SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
-//    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {

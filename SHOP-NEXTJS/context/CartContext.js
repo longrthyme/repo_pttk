@@ -9,17 +9,10 @@ const CartContext = createContext();
 
 export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
-  const [message, setMessage] = useState("");
-  const { user } = useContext(AuthContext);
-
+  
   const { data: session } = useSession();
   const token = session?.accessToken;
 
-  // useEffect(() => {
-  //   if (token) {
-  //     getCart();
-  //   }
-  // }, [token]);
 
   const getCart = async () => {
     const resGet = await fetch(`${API_URL}/cart/all_cart_items`, {
@@ -84,7 +77,6 @@ export function CartProvider({ children }) {
   const value = {
     cart,
     addItemToCart,
-    message,
     getCart,
     setCart,
     deleteCartItem

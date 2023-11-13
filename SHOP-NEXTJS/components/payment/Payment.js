@@ -39,9 +39,6 @@ async function createOrder(cart, address) {
   
   const totalCost = (cart.map((cartItem, index) => (cartItem.product.original_price - cartItem.product.original_price*cartItem.product.discount_percent)* (cartItem.quantity)).reduce((partialSum,a) => partialSum+a,0) + (cart.map((cartItem, index) => ((cartItem.product.discount_percent * cartItem.product.original_price))* (cartItem.quantity)).reduce((partialSum,a) => partialSum+a,0)) ).toFixed(2);
 
-
-  console.log("cart is " + JSON.stringify(cart));
-
   const requestBody = 
   {
     orderDTO: {

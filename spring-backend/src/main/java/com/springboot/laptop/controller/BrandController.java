@@ -90,8 +90,9 @@ public class BrandController {
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
-    public Object createBrand(@RequestBody BrandRequestDTO newBrand) throws Exception {
-        return brandServiceImpl.createOne(newBrand);
+    public ResponseEntity<?> createBrand(@RequestBody BrandRequestDTO newBrand) throws Exception {
+        return ResponseEntity.status(HttpStatus.CREATED).body(brandServiceImpl.createOne(newBrand));
+
     }
 
 

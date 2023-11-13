@@ -1,4 +1,4 @@
-import { NEXT_API } from "@/config";
+import { API_URL, NEXT_API } from "@/config";
 import NextAuth from "next-auth";
 
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -6,29 +6,35 @@ import CredentialsProvider from "next-auth/providers/credentials";
 const providers = [
   CredentialsProvider({
     name: "credentials",
-    authorize: async (credentials) => { // credentials passed from signIn method
+    authorize: async (credentials) => {
+      // credentials passed from signIn method
 
-      const response = await fetch(`${NEXT_API}/api/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          password: credentials.password,
-          username: credentials.username,
-        }),
-      });
+      try {
+        const response = await fetch(`${API_URL}/authenticate`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            password: credentials.password,
+            username: credentials.username,
+          }),
+        });
 
-      let data = await response.json();
+        let data = await response.json();
 
-      if (!response.ok) {
-      } else {
+        if (!response.ok) {
+          throw new Error(data.message);
+        }
+
         const user = {
-          token: data.user.jwtToken,
-          role: data.user.role,
+          token: data.loginInformation.jwtToken,
+          role: data.loginInformation.role,
         };
 
         return user;
+      } catch (error) {
+        throw error;
       }
     },
   }),

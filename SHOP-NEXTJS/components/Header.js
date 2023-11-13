@@ -1,39 +1,21 @@
-import AuthContext from "@/context/AuthContext";
 import React, { useContext, useEffect } from "react";
-
 import { useState } from "react";
-
-import { useRouter } from "next/router";
 import CartContext from "@/context/CartContext";
 import { useSession } from "next-auth/react";
-import logo_2 from "../public/images/logo_2.png";
-import { Image } from "antd";
-
 export default function Header() {
-  const { user, logout } = useContext(AuthContext);
-
-  console.log("User info trong header " , user);
-
   const [profileOpen, setProfileOpen] = useState(false);
 
   const { cart, getCart } = useContext(CartContext);
-
-  const router = useRouter();
-
-  const [open, setOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = React.useState(null);
-
-  
   
   const { data: session } = useSession();
   const token = session?.accessToken;
 
 
   useEffect(() => {
-    if (user != null) {
+    if (token != null) {
       getCart();
     }
-  }, []);
+  }, [token]);
 
   function DropdownItem(props) {
     return (
@@ -83,7 +65,7 @@ export default function Header() {
                 <i className="fas fa-user-headset" />
               </div>
               <div className="wsus__call_text">
-                <p>tester@gmail.com</p>
+                <p>bartfan.admin@bartfan.com</p>
                 <p>+840225335</p>
               </div>
             </div>

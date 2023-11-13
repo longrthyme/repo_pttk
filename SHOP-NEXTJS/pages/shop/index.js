@@ -66,12 +66,6 @@ export default function Shop() {
     return filteredProducts;
   };
 
-  // const result1 = setResult(filteredData(
-  //   listProds,
-  //   selectedOption,
-  //   searchProductName,
-  //   selectedBrand
-  // ));
 
   useEffect(() => {
     if (listProds.length > 0) {

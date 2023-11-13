@@ -1,10 +1,12 @@
 package com.springboot.laptop.utils;
 import com.springboot.laptop.base.AppUser;
+import com.springboot.laptop.exception.CustomResponseException;
 import com.springboot.laptop.model.Customer;
 import io.jsonwebtoken.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
@@ -15,6 +17,8 @@ public class JwtUtility implements Serializable {
     @Value("${jwt.secret}")
     private String jwtSecret;
     public static final long EXPIRE_DURATION = 24*60 * 60 * 1000; // 24 hour
+
+//    public static final long EXPIRE_DURATION = (long) (3*60* 1000); // 24 hour
 
     private static final Logger logger = LoggerFactory.getLogger(JwtUtility.class);
 
@@ -30,8 +34,8 @@ public class JwtUtility implements Serializable {
         try {
             Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token);
             return true;
-        } catch (SignatureException e){
-            return false;
+        } catch (JwtException | IllegalArgumentException e){
+            throw new CustomResponseException(HttpStatus.INTERNAL_SERVER_ERROR, "Expired or invalid JWT Token");
         }
     }
     public String getUerNameFromToken(String token){

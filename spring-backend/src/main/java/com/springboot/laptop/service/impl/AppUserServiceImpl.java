@@ -26,6 +26,7 @@ import com.springboot.laptop.utils.UidUtils;
 import freemarker.template.Configuration;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -70,6 +71,8 @@ public class AppUserServiceImpl implements AppUserService {
     private final AccountRepository accountRepository;
     private final ResetTokenRepository resetTokenRepository;
     private final MailService mailService;
+
+
     private final AuthenticationManager authenticationManager;
     private final UserDetailServiceImpl userDetailService;
     private final JwtUtility jwtUtility;

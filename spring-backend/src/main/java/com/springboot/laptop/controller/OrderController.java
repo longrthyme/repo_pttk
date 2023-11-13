@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -36,7 +37,7 @@ public class OrderController {
     @PreAuthorize("hasRole('ROLE_CUSTOMER')")
     @PostMapping("/create-order")
     public ResponseEntity<?> createOrder(@RequestBody OrderDTO orderDTO) throws IOException, InterruptedException {
-        return ResponseEntity.ok().body(payPalService.createOrder(orderDTO));
+        return ResponseEntity.status(HttpStatus.CREATED).body(payPalService.createOrder(orderDTO));
     }
 
     @PreAuthorize("hasRole('ROLE_CUSTOMER')")

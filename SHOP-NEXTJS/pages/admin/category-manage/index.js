@@ -4,7 +4,6 @@ import { Breadcrumb, Image, Input, Modal, Switch, Table } from "antd";
 import React, { Fragment, useContext, useEffect, useState } from "react";
 import DataContext from "@/context/DataContext";
 import { MdDeleteOutline } from "react-icons/md";
-import { ExclamationCircleFilled } from "@ant-design/icons";
 import { toast } from "react-toastify";
 import SpinTip from "@/components/loading/SpinTip";
 import { BiSolidEdit } from "react-icons/bi";
@@ -14,6 +13,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import errorCodes from "@/constant/ErrorCode";
 import { useForm } from "react-hook-form";
+import successCodes from "@/constant/SuccessCode";
 
 function Categories(props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -45,6 +45,15 @@ function Categories(props) {
 
   const router = useRouter();
 
+  const [updatedCate, setUpdatedCate] = useState();
+
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const [validateImage, setValidateImage] = useState({
+    imageExtension: false,
+    imageSize: false,
+  });
+
   const { data: session, status } = useSession({
     required: true,
     onUnauthenticated() {
@@ -69,6 +78,12 @@ function Categories(props) {
     handleSubmit,
     reset,
   } = useForm();
+
+  useEffect(() => {
+    if (isUpdating) {
+      reset(updatedCate);
+    }
+  }, [isUpdating]);
 
   const deleteCategory = async (categoryId) => {
     const resDel = await fetch(`${API_URL}/categories/${categoryId}`, {
@@ -137,15 +152,13 @@ function Categories(props) {
   };
 
   const onSubmit = async (data) => {
+    if (validateImage.imageExtension || validateImage.imageSize) return;
+
     setLoading(true);
 
     let result;
 
-    if (!state.isUpdating) {
-      result = addNewCategory(data);
-    } else {
-      result = updateCate(data);
-    }
+    result = !isUpdating ? addNewCategory(data) : updateCate(data);
 
     result
       .then((result) => {
@@ -155,10 +168,17 @@ function Categories(props) {
       })
       .then((result) => {
         //Successful request processing
-        toast.success("Added successfully !");
+        if (isUpdating) toast.success(successCodes.UPDATED_SUCCESSFULL);
+        else toast.success(successCodes.ADDED_SUCCESSFULL);
+        if (isUpdating) {
+          setIsUpdating(false);
+          setState({ ...state, imagePreview: null });
+        }
+        reset({});
 
         setIsModalOpen(false);
         setLoading(false);
+
         getCategories();
       })
       .catch((error) => {
@@ -166,30 +186,43 @@ function Categories(props) {
 
         error.json().then((body) => {
           //Here is already the payload from API
-          console.log("body " + JSON.stringify(body));
           toast.error(body.message);
           setLoading(false);
         });
+      })
+      .finally(() => {
+        setState({ ...state, imagePreview: null });
       });
   };
 
-  // update category
+  // update category handler
   const updateCategory = (categoryId) => {
     const updateCate = listCates.find((cate) => cate.id == categoryId);
+
     setIsModalOpen(true);
     setState({
       ...state,
-      categoryName: updateCate.name,
-      imagePreview: updateCate.imageUrl,
-      isUpdating: true,
-      status: updateCate.enabled,
+      // isUpdating: true,
       categoryId: categoryId,
+      imagePreview: updateCate.imageUrl,
+    });
+
+    setIsUpdating(true);
+    setUpdatedCate({
+      name: updateCate.name,
     });
   };
 
-  // update status
+  // cancel dialog
+  const handleCancel = () => {
+    setIsModalOpen(false);
+    if (isUpdating) setIsUpdating(false);
+    reset({});
+    setState({ ...state, imagePreview: null });
+  };
+
+  // update status handler
   const updateStatus = async (categoryId, status) => {
-    // ver
     const resPut2 = await fetch(`${API_URL}/categories/status/${categoryId}`, {
       method: "PUT",
       headers: {
@@ -211,25 +244,46 @@ function Categories(props) {
     }
   };
 
-  // export to excel file
-  const exportToExcelFile = async () => {
-    const url = `${API_URL}/categories/download`;
+  const handleImageUpload = (e) => {
+    /**
+     * upload image
+     */
 
-    window.location = url;
+    const file = e.target.files[0];
+
+    if (file?.size > 2000000) {
+      setValidateImage({ ...validateImage, imageSize: true });
+      return;
+    }
+
+    if (validateImage.imageSize) {
+      setValidateImage({ ...validateImage, imageSize: false });
+    }
+
+    if (!file?.name.match(/\.(jpg|jpeg|png|gif)$/)) {
+      setValidateImage({
+        ...validateImage,
+        imageExtension: true,
+      });
+      return;
+    } else {
+      setState({ ...state, imagePreview: URL.createObjectURL(file) });
+
+      if (validateImage.imageExtension) {
+        setValidateImage((prevState) => ({
+          ...prevState,
+          imageExtension: false,
+        }));
+      }
+    }
   };
 
-  // cancel
-  const handleCancel = () => {
-    setIsModalOpen(false);
-    setState({
-      categoryName: "",
-      imageUrl: "",
-      imageData: null,
-      imagePreview: null,
-      isLoading: false,
-      isUpdating: false,
-      status: false,
-    });
+  const exportToExcelFile = async () => {
+    /**
+     * download to excel
+     */
+    const url = `${API_URL}/categories/download`;
+    window.location = url;
   };
 
   const columns = [
@@ -267,11 +321,11 @@ function Categories(props) {
       ),
     },
     {
-      title: "Products",
+      title: "No. Products",
       dataIndex: "",
       key: "",
       responsive: ["lg"],
-      render: (_, record) => <h2>{record.products.length}</h2>,
+      render: (_, record) => <p>{record.products.length}</p>,
     },
     {
       title: "Enabled",
@@ -314,10 +368,10 @@ function Categories(props) {
                     .then((res) => {
                       if (!res.ok) {
                         throw res;
-                      } 
+                      }
                       return res.json();
-                    }).then(data => {
-
+                    })
+                    .then((data) => {
                       MySwal.fire(
                         "Thành công",
                         "Đã xoá danh mục thành công",
@@ -325,23 +379,20 @@ function Categories(props) {
                       );
 
                       getCategories();
-                    }).catch((error) => {
+                    })
+                    .catch((error) => {
                       //Here is still promise
                       if (typeof error.json === "function") {
-                      
                         error.json().then((body) => {
-                          console.log("Body is " +body );
+                          console.log("Body is " + body);
                           //Here is already the payload from API
                           console.log("body " + JSON.stringify(body));
                           MySwal.fire("Failure!", body.message, "error");
                         });
-                      
                       } else {
                         MySwal.fire("Failure!", body, "error");
                       }
-                      
                     });
-                  
                 }
               });
             }}
@@ -463,8 +514,10 @@ function Categories(props) {
                       type="file"
                       accept="image/*"
                       {...register("image", {
-                        required: errorCodes.IMAGE_REQUIRED,
-                       
+                        required: isUpdating
+                          ? false
+                          : errorCodes.IMAGE_REQUIRED,
+                        onChange: (e) => handleImageUpload(e),
                       })}
                     ></input>
                   </div>
@@ -482,10 +535,24 @@ function Categories(props) {
                   )}
                 </div>
                 <p>
-                  {" "}
                   {errors.image && (
                     <p className="text-red-600 mt-2">
                       {errors?.image.message || "Error"}
+                    </p>
+                  )}
+                </p>
+                <p>
+                  {validateImage.imageExtension && (
+                    <p className="text-red-600 mt-2">
+                      {errorCodes.IMAGE_EXTENSION_SUPPORTED || "Error"}
+                    </p>
+                  )}
+                </p>
+
+                <p>
+                  {validateImage.imageSize && (
+                    <p className="text-red-600 mt-2">
+                      {errorCodes.IMAGE_SIZE_LIMIT || "Error"}
                     </p>
                   )}
                 </p>

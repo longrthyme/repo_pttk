@@ -1,0 +1,16 @@
+.image-wrapper {
+    position: relative;
+    display: inline-block;
+    margin: 10px;
+}
+
+.delete-icon {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: black;
+    color: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    padding: 5px;
+}

@@ -30,16 +30,16 @@ export default function Login() {
       password: data.password,
       callbackUrl: `${window.location.origin}/`,
       redirect: false
-    }).then(function(data) {
-
-      if(data.error) {
-        toast.error(errorCodes.AUTHENTICATION_FAILURE);
-      } else {
+    })
+    .then(({ ok, error }) => {
+      if (ok) {
         toast.success(successCodes.AUTHENTICATION_SUCCESS);
+          router.push("/");
+      } else {
+          console.log("result login " + error)
+          toast.error(error);
       }
-    }
-    
-    );
+  })
 
 
   }
@@ -162,19 +162,7 @@ export default function Login() {
 
 
                       <div className="wsus__login_save">
-                        <div className="form-check form-switch">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id="flexSwitchCheckDefault"
-                          />
-                          <label
-                            className="form-check-label"
-                            htmlFor="flexSwitchCheckDefault"
-                          >
-                            Remember me
-                          </label>
-                        </div>
+                     
                         <a className="forget_p" href="forgot-password">
                           forget password ?
                         </a>
@@ -182,8 +170,8 @@ export default function Login() {
                       <button className="common_btn" type="submit">
                         login
                       </button>
-                      <p className="social_text">Sign in with social account</p>
-                      <ul className="wsus__login_link">
+                      {/* <p className="social_text">Sign in with social account</p> */}
+                      {/* <ul className="wsus__login_link">
                         <li>
                           <a href="#">
                             <i className="fab fa-google" />
@@ -204,7 +192,7 @@ export default function Login() {
                             <i className="fab fa-linkedin-in" />
                           </a>
                         </li>
-                      </ul>
+                      </ul> */}
                     </form>
                   </div>
                 </div>

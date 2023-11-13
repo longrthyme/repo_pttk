@@ -135,7 +135,7 @@ export default function Import() {
               setOpen(true);
               setSelectedImport(record);
             }}
-            className="hover:cursor-pointer text-xl hover:text-red-700 btn btn-primary"
+            className="text-xl hover:cursor-pointer hover:text-red-700"
           />
         </div>
       ),
@@ -212,6 +212,7 @@ export default function Import() {
           <BootstrapDialog
             onClose={handleClose}
             aria-labelledby="customized-dialog-title"
+            className="p-16"
             open={open}
           >
             <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">

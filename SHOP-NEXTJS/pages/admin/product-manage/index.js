@@ -356,7 +356,7 @@ function Products(props) {
 
                   <button
                     className="text-white bg-primary-500 hover:bg-pimary-600 focus:ring-4 focus:ring-cyan-200 font-medium inline-flex items-center rounded-lg text-sm px-3 py-2 text-center sm:ml-auto"
-                    onClick={() => router.push("/admin/product-manage/add")}
+                    onClick={() => router.push("/admin/product-manage/add-product")}
                   >
                     <svg
                       className="-ml-1 mr-2 h-6 w-6 text-white"

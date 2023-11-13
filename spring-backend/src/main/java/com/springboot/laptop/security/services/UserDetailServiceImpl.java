@@ -51,8 +51,8 @@ public class UserDetailServiceImpl implements UserDetailsService {
 
     private UserDetails mapToUserDetails(Customer customer) {
 
-        String role = userRoleRepository.findByName(UserRoleEnum.ROLE_CUSTOMER).get().getName().name();
-        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
+//        String role = userRoleRepository.findByName(UserRoleEnum.ROLE_CUSTOMER).get().getName().name();
+        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_CUSTOMER"));
         return new User(
                 customer.getUsername(),
                 customer.getPassword(),

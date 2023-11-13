@@ -65,8 +65,8 @@ public class CategoryController {
     @PostMapping(consumes = {   "multipart/form-data" })
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
-    public Object createCategory(@RequestPart("category")  CategoryRequestDTO categoryDto, @RequestPart(value = "image", required = false) MultipartFile imageMultipart) throws Exception {
-        return ResponseEntity.ok().body(categoryServiceImpl.createOne(categoryDto, imageMultipart));
+    public ResponseEntity<?> createCategory(@RequestPart("category")  CategoryRequestDTO categoryDto, @RequestPart(value = "image", required = false) MultipartFile imageMultipart) throws Exception {
+        return ResponseEntity.status(HttpStatus.CREATED).body(categoryServiceImpl.createOne(categoryDto, imageMultipart));
     }
 
 
@@ -122,8 +122,6 @@ public class CategoryController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<?> updateStatus(@PathVariable Long cateId, @RequestBody Boolean cate_status ) {
-        // note : not using operator "=="
-//        Boolean category_status = "true".equalsIgnoreCase(cate_status) ? true : false;
         return ResponseEntity.ok().body(categoryServiceImpl.updateStatus(cateId, cate_status));
 
     }
@@ -147,13 +145,12 @@ public class CategoryController {
     public ResponseEntity<?> deleteCategory(@PathVariable Long cateId) throws Exception {
         return ResponseEntity.ok().body(categoryServiceImpl.deleteOne(cateId));
     }
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
+
     @GetMapping("/download")
     public void getFile(HttpServletResponse response) throws IOException {
         String headerKey = "Content-Disposition";
         String headerValue = "attachment; filename=category_list"  + ".xlsx";
         response.setHeader(headerKey, headerValue);
-
         categoryServiceImpl.exportToExcelFile(response);
     }
 

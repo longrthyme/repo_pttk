@@ -38,10 +38,9 @@ public class ImportDetail {
     private ProductEntity product;
 
     @Min(1)
-//    @NotNull
     private Long quantity;
 
-//    @NotNull
+
     private double price;
 
 

@@ -26,8 +26,10 @@ import "../public/css/bootstrap.min.css";
 import "../public/css/all.min.css";
 import "../public/css/style.css";
 import "../public/css/components.css";
+import "../public/css/custom.css";
 import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 import { SessionProvider } from "next-auth/react";
+import Script from "next/script";
 
 export default function App({
   Component,
@@ -51,46 +53,55 @@ export default function App({
           rel="stylesheet"
           href="https://unpkg.com/react-quill@1.3.3/dist/quill.snow.css"
         />
-        <script type="text/javascript" src="/js/jquery-3.6.0.min.js"></script>
-        <script
+        
+        <script type="text/javascript" src="../js/Font-Awesome.js"></script>
+        <script type="text/javascript" src="../js/select2.min.js"></script>
+        <script type="text/javascript" src="../js/popper.js"></script>
+        <script type="text/javascript" src="../js/tooltip.js"></script>
+        <script type="text/javascript" src="../js/moment.min.js"></script>
+        
+        <script type="text/javascript" src="../js/bootstrap-modal.js"></script>
+
+        {/* <script
           type="text/javascript"
-          src="/js/bootstrap.bundle.min.js"
+          src="../js/jquery.nicescroll.min.js"
         ></script>
-        <script type="text/javascript" src="/js/Font-Awesome.js"></script>
-        <script type="text/javascript" src="/js/select2.min.js"></script>
-        <script type="text/javascript" src="/js/slick.min.js"></script>
-        <script type="text/javascript" src="/js/popper.js"></script>
-        <script type="text/javascript" src="/js/tooltip.js"></script>
-        <script type="text/javascript" src="/js/moment.min.js"></script>
-        <script type="text/javascript" src="/js/bootstrap-modal.js"></script>
-        <script
-          type="text/javascript"
-          src="/js/jquery.nicescroll.min.js"
-        ></script>
-        <script type="text/javascript" src="/js/stisla.js"></script>
-        <script type="text/javascript" src="/js/scripts.js"></script>
-        <script type="text/javascript" src="/js/custom.js"></script>
-
-        {/* <script async defer crossOrigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script> */}
-
-        <script
-            type="text/javascript"
-            dangerouslySetInnerHTML={{
-              __html: `
-                window.fbAsyncInit = function() {
-                  FB.init({
-                    appId      : '882910933234780',
-                    xfbml      : true,
-                    version    : 'v11.0'
-                  });
-                };
-              `,
-            }}
-          />
-       
-      </Head>
-
+        <script type="text/javascript" src="../js/stisla.js"></script>
+        <script type="text/javascript" src="../js/scripts.js"></script>
+        <script type="text/javascript" src="../js/custom.js"></script>
       
+        <script src="../js/bootstrap.bundle.min.js"></script>
+
+        <script src="../js/simplyCountdown.js"></script>
+
+        <script src="../js/jquery.exzoom.js"></script>
+
+        <script src="../js/jquery.nice-number.min.js"></script>
+
+        <script src="../js/jquery.waypoints.min.js"></script>
+        <script src="../js/jquery.countup.min.js"></script>
+
+        <script src="../js/add_row_custon.js"></script>
+
+        <script src="../js/multiple-image-video.js"></script>
+
+        <script src="../js/sticky_sidebar.js"></script>
+
+        <script src="../js/ranger_jquery-ui.min.js"></script>
+        <script src="../js/ranger_slider.js"></script>
+
+        <script src="..js/jquery-3.6.0.min.js"></script>
+
+        <script src="..js/slick.min.js"></script>
+
+        <script src="../js/isotope.pkgd.min.js"></script>
+
+        <script src="../js/venobox.min.js"></script>
+
+        <script src="../js/jquery.classycountdown.js"></script>
+
+        <script src="../js/main.js"></script> */}
+      </Head>
 
       <SessionProvider session={session}>
         <AuthProvider>

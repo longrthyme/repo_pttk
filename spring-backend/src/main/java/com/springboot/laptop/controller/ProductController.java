@@ -54,7 +54,7 @@ public class ProductController {
         @RequestParam(value = "primaryImage", required = false) MultipartFile mainImageMultipart,
         @RequestParam(value = "extraImage", required = false) MultipartFile[] extraImageMultiparts
                                 ) throws ParseException {
-        return ResponseEntity.ok().body(productServiceImpl.createOne(product, mainImageMultipart,extraImageMultiparts ));
+        return ResponseEntity.status(HttpStatus.CREATED).body(productServiceImpl.createOne(product, mainImageMultipart,extraImageMultiparts ));
 
     }
 

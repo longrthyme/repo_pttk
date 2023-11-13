@@ -10,9 +10,9 @@ import com.springboot.laptop.model.CategoryEntity;
 import com.springboot.laptop.model.dto.BrandDTO;
 import com.springboot.laptop.model.dto.CategoryDTO;
 import com.springboot.laptop.model.dto.request.BrandRequestDTO;
+import com.springboot.laptop.model.dto.response.ResponseObject;
 import com.springboot.laptop.model.dto.response.StatusResponseDTO;
-import com.springboot.laptop.repository.BrandRepository;
-import com.springboot.laptop.repository.CategoryRepository;
+import com.springboot.laptop.repository.*;
 import com.springboot.laptop.service.BrandService;
 import com.springboot.laptop.utils.StringUtility;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +32,10 @@ public class BrandServiceImpl implements BrandService {
     private final ProductMapper productMapper;
     private final CategoryMapper categoryMapper;
     private final BrandMapper brandMapper;
+
+    private final OrderDetailRepository orderDetailRepository;
+
+    private final CartRepository cartRepository;
     private final StringUtility stringUtility = new StringUtility();
 
     @Override
@@ -66,14 +70,25 @@ public class BrandServiceImpl implements BrandService {
 
     @Override
     public Object deleteOne(Long brandId) {
-    BrandEntity brand = brandRepository.findById(brandId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.BRAND_NOT_FOUND));
+        BrandEntity brand = brandRepository.findById(brandId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.BRAND_NOT_FOUND));
+
+        orderDetailRepository.findAll().forEach(orderDetails -> {
+            if(orderDetails.getProduct().getBrand().getId().equals(brandId)) throw new RuntimeException("Tồn tại sản phẩm đã bán thuộc danh mục này !");
+        });
+
+        cartRepository.findAll().forEach(cart -> {
+            cart.getCartDetails().forEach(cartDetails -> {
+                if(cartDetails.getProduct().getBrand().getId().equals(brandId)) throw new RuntimeException("Tồn tại sản phẩm thuộc danh mục đang trong giỏ hàng !");
+            });
+        });
+
         try {
             brandRepository.delete(brand);
         }
         catch (Exception ex) {
             throw new CustomResponseException(StatusResponseDTO.BRAND_CONSTRAINT_EXCEPTION);
         }
-        return "Delete successfully";
+        return new ResponseObject("Delete successfully");
     }
 
     @Override

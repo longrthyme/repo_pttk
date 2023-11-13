@@ -4,6 +4,7 @@ package com.springboot.laptop.controller;
 import com.springboot.laptop.model.dto.request.ImportRequestDTO;
 import com.springboot.laptop.service.ImportService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +19,7 @@ public class ImportController {
     @PostMapping
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_EMPLOYEE')")
     public Object createImport(@RequestBody ImportRequestDTO importRequest) {
-        return ResponseEntity.ok().body(importService.createImport(importRequest));
+        return ResponseEntity.status(HttpStatus.CREATED).body(importService.createImport(importRequest));
     }
 
     @GetMapping

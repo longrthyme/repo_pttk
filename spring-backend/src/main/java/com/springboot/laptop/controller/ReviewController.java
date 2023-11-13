@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -31,10 +32,10 @@ public class ReviewController {
     @PreAuthorize("hasRole('ROLE_CUSTOMER')")
     @PostMapping
     public Object postReview(@RequestBody ReviewRequestDTO reviewRequest) {
-        return ResponseEntity.ok().body(reviewService.postReview(reviewRequest));
+        return ResponseEntity.status(HttpStatus.CREATED).body(reviewService.postReview(reviewRequest));
     }
 
-//    @PreAuthorize("permitAll")
+
     @GetMapping("/list-all/{productId}")
     public Object getAllReviewBasedProduct(@PathVariable("productId") Long productId) {
         return ResponseEntity.ok().body(reviewService.getAllReviewBasedProduct(productId));

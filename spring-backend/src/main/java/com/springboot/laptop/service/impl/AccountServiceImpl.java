@@ -79,27 +79,38 @@ public class AccountServiceImpl implements AccountService {
     public Object updateAccount(Long accountId, UserCreationDTO updateUser, MultipartFile image) {
         Account existingAccount = accountRepository.findById(accountId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
 
-        existingAccount.setUsername(updateUser.getUsername());
-        if(!updateUser.getPassword().isEmpty()) {
-            existingAccount.setPassword(passwordEncoder.encode(updateUser.getPassword()));
-        } else {
-            existingAccount.setPassword(existingAccount.getPassword());
-        }
-        existingAccount.setEmail(updateUser.getEmail());
-        existingAccount.setName(updateUser.getName());
-        existingAccount.setImgURL(amazonS3Service.uploadImage(image));
-        existingAccount.setEnabled(updateUser.getEnabled());
-        existingAccount.setModifiedTimestamp(new Date());
-        existingAccount.setPhoneNumber(updateUser.getPhoneNumber());
-        var listRole = updateUser.getRoles().stream().map(role -> {
-            try {
-                return userRoleService.getUserRoleByEnumName(UserRoleEnum.valueOfCode(role.getName()));
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+        try {
+
+            existingAccount.setUsername(updateUser.getUsername());
+            if(updateUser.getPassword() != null && !updateUser.getPassword().isEmpty()) {
+                existingAccount.setPassword(passwordEncoder.encode(updateUser.getPassword()));
+            } else {
+                existingAccount.setPassword(existingAccount.getPassword());
             }
-        }).collect(Collectors.toList());
-        existingAccount.setRoles(listRole);
-        return accountMapper.convertEntityToDTO(accountRepository.save(existingAccount));
+
+            if(image != null )  {
+                existingAccount.setImgURL(amazonS3Service.uploadImage(image));
+            }
+            existingAccount.setEmail(updateUser.getEmail());
+            existingAccount.setName(updateUser.getName());
+            existingAccount.setEnabled(updateUser.getEnabled());
+            existingAccount.setModifiedTimestamp(new Date());
+            existingAccount.setPhoneNumber(updateUser.getPhoneNumber());
+            var listRole = updateUser.getRoles().stream().map(role -> {
+                try {
+                    return userRoleService.getUserRoleByEnumName(UserRoleEnum.valueOfCode(role.getName()));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }).collect(Collectors.toList());
+            existingAccount.setRoles(listRole);
+            return accountMapper.convertEntityToDTO(accountRepository.save(existingAccount));
+
+        } catch (Exception ex) {
+
+            throw ex;
+        }
+
 
     }
 
@@ -108,9 +119,14 @@ public class AccountServiceImpl implements AccountService {
     public Object updateStatus(Long customerId, String status) {
         boolean accountStatus = status.equalsIgnoreCase("enabled");
 
-        Account existingAccount = accountRepository.findById(customerId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
-        existingAccount.setEnabled(accountStatus);
+        try {
+            Account existingAccount = accountRepository.findById(customerId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
+            existingAccount.setEnabled(accountStatus);
 
-        return accountMapper.convertEntityToDTO(accountRepository.save(existingAccount));
+            return accountMapper.convertEntityToDTO(accountRepository.save(existingAccount));
+        } catch (Exception ex) {
+
+            throw ex;
+        }
     }
 }

@@ -11,6 +11,7 @@ import { BiSolidEdit } from "react-icons/bi";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { Image } from "@mui/icons-material";
+import successCodes from "@/constant/SuccessCode";
 
 function Brands(props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -143,7 +144,7 @@ function Brands(props) {
         toast.error(data.message);
       } else {
         getBrands();
-        toast.success("Successfully added");
+        toast.success(successCodes.ADDED_SUCCESSFULL);
       }
     } else {
       // updating action
@@ -154,7 +155,11 @@ function Brands(props) {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(req.body),
+        // body: JSON.stringify(req.body),
+        body: JSON.stringify({
+          brandName: state.brandName,
+          cateIds: value.map((cate) => cate.key),
+        }),
       });
 
       const data = await response.json();
@@ -164,7 +169,7 @@ function Brands(props) {
         return;
       } else {
         getBrands();
-        toast.success("Cập nhật thành công !");
+        toast.success(successCodes.UPDATED_SUCCESSFULL);
       }
     }
 
@@ -313,7 +318,7 @@ function Brands(props) {
                 placeholder="find your brand"
                 enterButton="Search"
                 size="large"
-                className="w-1/3"
+                className="w-1/3 text-white"
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}
               />
@@ -359,22 +364,22 @@ function Brands(props) {
               <label className="block text-md mt-6"> Tên hãng </label>
               <input
                 placeholder="Brand name"
-                className="border-2 border-solid rounded-lg p-2 focus:outline-none w-1/3 text-sm"
+                className="border-2 border-solid rounded-lg p-2 focus:outline-none w-3/4 text-sm"
                 type="text"
                 value={state.brandName}
                 onChange={(e) =>
                   setState({ ...state, brandName: e.target.value })
                 }
               />
-              <div className="flex justify-between items-center align-center w-full">
+              <div className="flex justify-between items-center align-center w-2/3">
                 <div className="flex flex-col mt-4 w-full">
-                  <label className="block"> Kinh doanh </label>
+                  <label className="block mb-2"> Kinh doanh </label>
 
                   <Select
                     mode="multiple"
                     labelInValue
                     value={value}
-                    placeholder="Select category sell"
+                    placeholder="sell"
                     filterOption={false}
                     onChange={handleChange}
                     style={{ width: "100%" }}

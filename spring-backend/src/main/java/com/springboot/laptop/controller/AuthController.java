@@ -29,6 +29,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
 public class AuthController {
+
     private final AppUserService userService;
 
     @Operation(summary = "Đăng ký ",
@@ -76,7 +77,7 @@ public class AuthController {
     @PostMapping("/user/add-address")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<?> addAddress(@RequestBody AddressDTO requestAddress) {
-        return ResponseEntity.ok().body(userService.addNewAddress(requestAddress));
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.addNewAddress(requestAddress));
     }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_CUSTOMER', 'ROLE_EMPLOYEE')")

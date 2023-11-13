@@ -6,6 +6,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 public class CustomResponseException extends ResponseStatusException {
 
+    public CustomResponseException(HttpStatus status, String reason) {
+        super(status, reason);
+    }
+
     public CustomResponseException(StatusResponseDTO response) {
         super(HttpStatus.valueOf(Integer.parseInt(response.getCode())), response.getMessage());
     }

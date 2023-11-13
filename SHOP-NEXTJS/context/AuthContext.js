@@ -46,23 +46,11 @@ export function AuthProvider({ children }) {
     setIsLoading(false);
   };
 
-  // logout
-  const logout = async () => {
-    const response = await fetch(`${NEXT_API}/api/logout`, {
-      method: "POST",
-    });
 
-    const data = await response.json();
-
-    if (response.ok) {
-      setUser(null);
-      router.push("/account/login");
-    }
-  };
 
   return (
     <AuthContext.Provider
-      value={{ user, error, login, logout, isLoading, userOrder }}
+      value={{ user, error, login,  isLoading, userOrder }}
     >
       {children}
     </AuthContext.Provider>

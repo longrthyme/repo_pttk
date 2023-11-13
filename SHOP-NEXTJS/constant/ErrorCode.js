@@ -15,6 +15,7 @@ const errorCodes = {
     PRODUCT_NAME_REQUIRED: "Please provide the product name !",
     PRODUCT_DISCOUNT_REQUIRED: "Please provide the discount percent !",
     PRODUCT_DISCOUNT_MIN : "Discount percent min is 0.0",
+    PRODUCT_DISCOUNT_MAX: "Discount percent max is 1.0",
     BRAND_GET_FAILURE: "Error while getting brand",
     CATEGORY_BY_BRAND: "Error while getting categories by brand",
     PRODUCT_PRICE_REQUIRED: "Please provide the product price",
@@ -29,6 +30,9 @@ const errorCodes = {
     FULL_NAME_REQUIRED: "Full name is required",
     DETAIL_NAME_REQUIRED: "Detail name is required ",
     DETAIL_VALUE_REQUIRED: "Detail value is required ",
+    IMAGE_EXTENSION_SUPPORTED: "Image extension is not supported (only .jpg, .jpeg, .png, .gif)",
+    IMAGE_SIZE_LIMIT: "Image size limits 2MB only !",
+    INFORMATION_IS_MISSING: "Vui lòng nhập đầy đủ thông tin !"
     
     
   };

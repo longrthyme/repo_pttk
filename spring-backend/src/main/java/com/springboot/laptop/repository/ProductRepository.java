@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
@@ -14,6 +15,8 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
     @Query("UPDATE ProductEntity p SET p.enabled=?2 WHERE p.id = ?1")
     @Modifying(clearAutomatically=true)
     public void updateStatus(Long id, boolean enabled);
+
+    public Optional<ProductEntity> findByName(String name);
 
 
     @Query(value = "SELECT * FROM products WHERE original_price < :price", nativeQuery = true)
@@ -36,6 +39,4 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
     @Query(value ="select * from products inner join categories ON categories.id = products.category_id " +
             "where products.enabled = true and categories.enabled = true", nativeQuery = true)
     List<ProductEntity> getActiveProducts();
-
-
 }

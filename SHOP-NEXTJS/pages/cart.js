@@ -149,7 +149,7 @@ function Cart(props) {
                   <div className="wsus__cart_list cart_empty p-3 p-sm-5 text-center">
                     <p className="mb-4">your shopping cart is empty</p>
                     <a href="product_grid_view.html" className="common_btn">
-                      <i className="fal fa-store me-2" />
+                      <i className="fas fa-store me-2" />
                       view our product
                     </a>
                   </div>

@@ -113,7 +113,7 @@ public class OrderServiceImpl implements OrderService {
                 if(!username.equals(order.getAccount().getUsername())) throw new CustomResponseException(StatusResponseDTO.ORDER_PROCESS_HANDLED_ERROR);
             }
             if(order.getMethodPayment().equals(PaymentMethod.CASH) && OrderStatus.DELIVERED.equals(OrderStatus.valueOf(changeStatusDTO.getStatus()))) order.setPayment_status(PaymentStatus.PAID);
-            if(order.getOrderStatus() == OrderStatus.NEW) order.setOrderStatus(status);
+            order.setOrderStatus(status);
             order.setAccount(account);
 
             return orderMapper.orderToDTO(orderRepository.save(order));
@@ -196,7 +196,7 @@ public class OrderServiceImpl implements OrderService {
         order.setCustomer(user);
         order.setOrderStatus(OrderStatus.NEW);
         order.setMethodPayment(paymentMethod);
-        order.setPayment_status(paymentMethod.getMethodName().equals("PAY_PAL") ? PaymentStatus.PAID : PaymentStatus.UNPAID);
+        order.setPayment_status(paymentMethod.equals(PaymentMethod.PAY_PAL) ? PaymentStatus.PAID : PaymentStatus.UNPAID);
         order.setOrderDate(new Date());
 
         // add order detail to the order

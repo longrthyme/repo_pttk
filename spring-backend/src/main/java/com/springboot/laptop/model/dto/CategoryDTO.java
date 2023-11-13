@@ -30,7 +30,6 @@ public class CategoryDTO {
     private Date createdTimestamp;
 
    private Collection<ProductEntity> products;
-//
-//    private Collection<BrandEntity> brand;
+
 
 }

@@ -136,7 +136,7 @@ function UserOrderCard(props) {
       toast.error(dataGet.message);
     } else {
       toast.success("Review successful !");
-      router.push("/product/detail/${selectedDetail.productId}");
+      router.push(`/product/detail/${selectedDetail.productId}`);
     }
   };
 

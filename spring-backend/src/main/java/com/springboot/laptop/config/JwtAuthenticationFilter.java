@@ -26,17 +26,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired private JwtUtility jwtUtility;
 
-
-
-
-
-//    only run into this after pass shouldNotFilter function
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
-
-            System.out.println("Da vao filter internal");
-
             String token = getJwt(request);
 
             if(token !=null &&jwtUtility.validateToken(token)){
@@ -49,14 +41,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }
-
-            filterChain.doFilter(request,response);
-
-            SecurityContextHolder.getContext().setAuthentication(null);
         }
-        catch(ExpiredJwtException ex) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        catch(CustomResponseException ex) {
+            SecurityContextHolder.clearContext();
+            response.sendError(ex.getStatus().value(), ex.getMessage());
+            return;
         }
+
+        filterChain.doFilter(request,response);
 
     }
     private String getJwt(HttpServletRequest request){

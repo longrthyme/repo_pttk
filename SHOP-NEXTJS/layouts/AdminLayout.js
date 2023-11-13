@@ -8,27 +8,14 @@ import { useRouter } from "next/router";
 import { useContext, useState } from "react";
 import { FaUserTag } from "react-icons/fa";
 import { HiTemplate } from "react-icons/hi";
-import { BiSolidCategory, BiSolidReport } from "react-icons/bi";
+import { BiSolidCategory } from "react-icons/bi";
 import { TbBrandEnvato } from "react-icons/tb";
-import { BsFillPostcardHeartFill } from "react-icons/bs";
 import { AiFillDashboard } from "react-icons/ai";
 import { GiBeachBag } from "react-icons/gi";
-
-import {
-  BarChartOutlined,
-  ContainerOutlined,
-  FileImageOutlined,
-  FileTextOutlined,
-  GlobalOutlined,
-  LogoutOutlined,
-  SettingOutlined,
-  TagsOutlined,
-  TeamOutlined,
-  UploadOutlined,
-} from "@ant-design/icons";
 import AuthContext from "@/context/AuthContext";
 import Image from "next/image";
 import logo1 from "../public/images/logo1.png";
+import { signOut } from "next-auth/react";
 
 const { Header, Sider, Content } = Layout;
 const AdminLayout = ({ children }) => {
@@ -38,7 +25,6 @@ const AdminLayout = ({ children }) => {
   } = theme.useToken();
 
   const menuItems = {
-    "/": "1",
     "/admin/dashboard": "2",
     "/admin/product-manage": "3",
     "/admin/user-manage": "4",
@@ -55,8 +41,6 @@ const AdminLayout = ({ children }) => {
 
   const [current, setCurrent] = useState([menuItems[pathname]]);
 
-  const { user, logout } = useContext(AuthContext);
-
   function getItem(label, key, icon, pathroute) {
     return {
       key,
@@ -66,12 +50,19 @@ const AdminLayout = ({ children }) => {
     };
   }
 
-  const countStyle = {
-    right: 24,
+  const checkContains = (pathName) => {
+    const keys = Object.keys(menuItems);
+
+    for (const key of keys) {
+      if (pathName.includes(key)) {
+        return key;
+      }
+    }
+
+    menuItems;
   };
 
   const items = [
-    getItem("", "1", <Image src={logo1} width={80} height={80} className="object-cover cursor-pointer" />, "/"),
     getItem("Dashboard", "2", <AiFillDashboard />, "/admin/dashboard"),
     getItem("Product", "3", <HiTemplate />, "/admin/product-manage"),
     getItem("User", "4", <FaUserTag />, "/admin/user-manage"),
@@ -79,7 +70,7 @@ const AdminLayout = ({ children }) => {
     getItem("Brand", "6", <TbBrandEnvato />, "/admin/brand-manage"),
     getItem("Order", "7", <GiBeachBag />, "/admin/order-manage"),
     getItem("Customer", "8", <GiBeachBag />, "/admin/customer-manage"),
-    getItem("Import", "9", <GiBeachBag />, "/admin/import-manage")
+    getItem("Import", "9", <GiBeachBag />, "/admin/import-manage"),
   ];
 
   const handleClick = ({ item, key }) => {
@@ -99,7 +90,7 @@ const AdminLayout = ({ children }) => {
           theme="dark"
           mode="inline"
           defaultSelectedKeys={[menuItems[pathname]]}
-          selectedKeys={[menuItems[pathname]]}
+          selectedKeys={[menuItems[checkContains(pathname)]]}
           items={items}
           onClick={handleClick}
         />
@@ -110,20 +101,24 @@ const AdminLayout = ({ children }) => {
             padding: 0,
             background: colorBgContainer,
           }}
-          
         >
           <div className="">
-          <Button
-            type="text"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
-            style={{
-              fontSize: "16px",
-              width: 64,
-              // height: 64,
-            }}
-          />
-          <Button className="mr-0" onClick={logout}>Logout</Button>
+            <Button
+              type="text"
+              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+              onClick={() => setCollapsed(!collapsed)}
+              style={{
+                fontSize: "16px",
+                width: 64
+              }}
+            />
+            <Button className="mr-0" onClick={() =>
+                          signOut({
+                            callbackUrl: `${window.location.origin}/account/login`,
+                          })
+                        }>
+              Logout
+            </Button>
           </div>
         </Header>
 

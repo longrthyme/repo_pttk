@@ -7,13 +7,9 @@ import {
   Grid,
   InputLabel,
   OutlinedInput,
-  TextField,
 } from "@mui/material";
-import { Input } from "antd";
-import AuthContext from "@/context/AuthContext";
 import SpinTip from "../loading/SpinTip";
-import { handleImageUpload } from "@/utils/uploadImage";
-import { API_URL, NEXT_API } from "@/config";
+import { API_URL } from "@/config";
 import { toast } from "react-toastify";
 import DataContext from "@/context/DataContext";
 import { useSession } from "next-auth/react";
@@ -29,6 +25,11 @@ function UpdateInformation(props) {
 
   const [userData, setUserData] = useState(null);
 
+  const [userImage, setUserImage] = useState({
+    imageData: null,
+    imagePrev: null,
+  });
+
   const { data: session } = useSession();
   const token = session?.accessToken;
 
@@ -41,13 +42,9 @@ function UpdateInformation(props) {
   useEffect(() => {
     if (userInfo) {
       setUserData(userInfo);
+      setUserImage({...userImage, imagePrev: userInfo.imgURL});
     }
   }, [userInfo]);
-
-  const [image, setImage] = useState({
-    imageData: null,
-    imagePrev: null,
-  });
 
   const {
     register,
@@ -73,7 +70,7 @@ function UpdateInformation(props) {
     });
 
     formData.append("user", blob);
-    formData.append("image", image.imageData);
+    formData.append("image", userImage.imageData);
     //ver
     const resGet = await fetch(`${API_URL}/user/update-profile`, {
       method: "PUT",
@@ -115,10 +112,8 @@ function UpdateInformation(props) {
                       <Image
                         className="rounded-xl"
                         src={
-                          userData.imgURL
-                            ? userData.imgURL
-                            : image.imagePrev
-                            ? image.imagePrev
+                          userImage?.imagePrev
+                            ? userImage?.imagePrev
                             : logo_upload
                         }
                         width={150}
@@ -141,7 +136,7 @@ function UpdateInformation(props) {
                           id="account-settings-upload-image"
                           onChange={(e) => {
                             if (e.target.files[0]) {
-                              setImage({
+                              setUserImage({
                                 imageData: e.target.files[0],
                                 imagePrev: URL.createObjectURL(
                                   e.target.files[0]

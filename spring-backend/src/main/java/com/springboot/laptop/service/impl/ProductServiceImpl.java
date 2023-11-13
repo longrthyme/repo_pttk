@@ -43,7 +43,6 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductMapper productMapper;
     private final CloudinaryService cloudinaryService;
-    private final OrderRepository orderRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final CartRepository cartRepository;
 
@@ -59,6 +58,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Object createOne(ProductDTO product, MultipartFile mainImageMultipart, MultipartFile[] extraImageMultiparts) throws ParseException {
+
+
+        if(productRepository.findByName(product.getName()).isPresent()) throw new RuntimeException("Product name already exists !");
 
         ProductEntity convertEntity = productMapper.convertProductDTO(product);
         CategoryEntity foundCate = categoryRepository.findById(product.getCategory()).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.CATEGORY_NOT_FOUND));
@@ -77,7 +79,6 @@ public class ProductServiceImpl implements ProductService {
                 convertEntity.getDetails().add(newDetail);
             }
         }
-
 
         convertEntity.setImages(new HashSet<>());
 

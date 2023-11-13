@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { FaStar } from "react-icons/fa";
 
 function ProductInfomation({ dataInfor }) {
-  console.log("Value data " + JSON.stringify(dataInfor));
   return (
     <div>
       <div className="mt-8">

@@ -33,10 +33,6 @@ public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewMapper reviewMapper;
 
-//    public boolean checkHasComment(ProductEntity product, Customer user) {
-//        return reviewRepository.findByProductAndCustomer(product, user) != null;
-//    }
-
 
     public boolean checkHasComment(String orderCode, Long productId) {
         Order existingOrder = orderRepository.findById(orderCode).orElseThrow(() -> new RuntimeException("The order does not exist"));
@@ -48,11 +44,13 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public Object postReview(ReviewRequestDTO reviewRequest) {
         ProductEntity existingProduct =  productRepository.findById(reviewRequest.getProductId()).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND));
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
         Order currentOrder =orderRepository.findById(reviewRequest.getOrderCode()).orElseThrow(() -> new RuntimeException("The order not exist"));
-        if(currentOrder.getOrderStatus().toString().equals(OrderStatus.DELIVERED.toString())) {
+
+        if(!currentOrder.getOrderStatus().equals(OrderStatus.DELIVERED)) {
             throw new RuntimeException("This order has not been delivered yet !");
         }
+
+
         if(checkHasComment(reviewRequest.getOrderCode(), reviewRequest.getProductId())) throw  new RuntimeException("You have already reviewed this product !");
         ReviewEntity newReview = new ReviewEntity();
         newReview.setComment(reviewRequest.getComment());

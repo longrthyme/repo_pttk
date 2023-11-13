@@ -9,4 +9,4 @@
 export const API_URL = "http://localhost:8080/api/v1"
 
 export const NEXT_API =
-  "http://localhost:3000/"
+  "https://long-electronic.onrender.com/"
