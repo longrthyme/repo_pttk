@@ -12,7 +12,7 @@ export default function Header() {
 
 
   useEffect(() => {
-    if (token != null) {
+    if (token != null && session?.role == "CUSTOMER") {
       getCart();
     }
   }, [token]);

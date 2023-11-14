@@ -154,6 +154,8 @@ export function DataProvider({ children }) {
     if (!resGet.ok) {
       toast.error(dataPos.message);
     } else {
+
+      console.log("Ds product admin ", JSON.stringify(dataPos));
       setState((prevState) => ({
         ...prevState,
         isLoading: false,

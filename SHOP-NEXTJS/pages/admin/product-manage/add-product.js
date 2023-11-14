@@ -70,7 +70,6 @@ function AddProduct(props) {
 
   const addNewDetail = () => {
     setDetails([...details, { name: "", value: "" }]);
-    // setIsDetailMissing(true);
   };
 
   const removeDetailItem = (index) => {
@@ -611,8 +610,7 @@ function AddProduct(props) {
                     className="bg-black text-white hover:bg-gray-700 font-semibold rounded-md px-4 py-2 border border-1 border-solid rounded-md self-center mb-4"
                     onClick={addNewDetail}
                   >
-                    {" "}
-                    Add{" "}
+                    Add
                   </button>
                   {details.map((element, index) => (
                     <div className="mb-4" key={index}>

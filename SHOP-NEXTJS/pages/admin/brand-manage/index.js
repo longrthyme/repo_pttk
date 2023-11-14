@@ -257,7 +257,7 @@ function Brands(props) {
       ),
     },
     {
-      title: "Number category",
+      title: "No. category",
       dataIndex: "",
       key: "",
       responsive: ["sm"],
